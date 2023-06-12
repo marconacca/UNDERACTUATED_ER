@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="acrobot_link1">
+
+  <link name="link1">
+
+    <!-- Visual representation of the link -->
+    <visual>
+      <geometry>
+        <cylinder radius="0.05" length="1.0" />
+      </geometry>
+    </visual>
+
+    <!-- Collision representation of the link -->
+    <collision>
+      <geometry>
+        <cylinder radius="0.05" length="1.0" />
+      </geometry>
+    </collision>
+
+    <!-- Inertial properties of the link -->
+    <inertial>
+      <mass value="1.0" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      <origin rpy="0 0 0" xyz="0 0 0.5" />
+    </inertial>
+
+  </link>
+
+  <!-- Joint connecting the link to the previous link or base -->
+  <joint name="joint_link1" type="revolute">
+    <axis xyz="0 0 1" />
+    <limit effort="100" lower="-3.14" upper="3.14" velocity="1.0" />
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="base_link" />
+    <child link="link1" />
+  </joint>
+
+</robot>
