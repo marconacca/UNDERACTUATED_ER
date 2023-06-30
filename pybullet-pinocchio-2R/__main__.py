@@ -1,3 +1,0 @@
-import simulation
-
-simulation.simulate()
