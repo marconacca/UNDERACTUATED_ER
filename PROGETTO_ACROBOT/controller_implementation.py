@@ -10,7 +10,7 @@ def swing_up_control(model, q, v, desired_energy, desired_position):
     control_torques_energy_shaping = energy_shaping_controller(potential_energy, desired_energy)
 
     # Stabilization control
-    control_torques_stabilization = stabilization_controller(q, v, desired_position)
+    control_torques_stabilization = stabilization_controller(model,q[0],q[1],v[0],v[1])
 
     # Combine control torques
     control_torques = control_torques_energy_shaping + control_torques_stabilization
