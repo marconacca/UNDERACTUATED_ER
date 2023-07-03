@@ -59,7 +59,7 @@ def simulationSetup(simDT):
     # create the model of the robot
     robotModel = RobotModel(pin_model, pin_data)
 
-    return robotID, robotModel
+    return robotID, robotModel,pin_data
 
 
 

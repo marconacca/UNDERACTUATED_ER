@@ -13,9 +13,9 @@ def simulate():
 
     simDT = 1/240 # simulation timestep
     simTime = 25 # total simulation time in seconds
-    q0 = np.array([np.pi/2, 0]) # initial configuration
+    q0 = np.array([np.pi/2,0]) # initial configuration
 
-    robotID, robotModel = sim_utils.simulationSetup(simDT)
+    robotID, robotModel, data = sim_utils.simulationSetup(simDT)
 
     nDof = 2
 
@@ -45,28 +45,37 @@ def simulate():
     input("press ENTER to START the simulation:")
 
     for i in range(int(simTime/simDT)):
-
-        """ # read the current joint state from the simulator
-        q, qdot = sim_utils.getState(robotID, jointIndices)    
-
-        # compute the feedback torque command
-        tau = controller.JointPositionControl(robotModel, q, qdot, qdes)
-        #tau = controller.EePositionController(robotModel, q, qdot, ee_des)
-
-        # send the torque command to the simulator
-        pb.setJointMotorControlArray(
-            robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = tau)
-
-        # advance the simulation one step
-        pb.stepSimulation()
-        time.sleep(simDT) """
         # read the current joint state from the simulator
-        q, qdot = sim_utils.getState(robotID, jointIndices)    
-        control_torques = swing_up_control(robotModel, q, qdot, edes, qdes)
-        pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)
+        """q, qdot = sim_utils.getState(robotID, jointIndices)    
+        control_torques = swing_up_control(robotModel, q, qdot, edes, qdes, data,robotID)
+        pb.setJointMotorControlArray(robotID, jointIndices[1], controlMode = pb.TORQUE_CONTROL, forces=control_torques)
         # advance the simulation one step
+        pb.stepSimulation()"""
+        q, qdot = sim_utils.getState(robotID, jointIndices)  
+        control_torques = swing_up_control(robotModel, q, qdot, edes, qdes, data,robotID)
+        for joint_index in jointIndices:
+            if joint_index == 1:  # Apply control only to the second joint (index 1)
+                pb.setJointMotorControl2(
+                    bodyUniqueId=robotID,
+                    jointIndex=joint_index,
+                    controlMode=pb.TORQUE_CONTROL,
+                    force=control_torques
+                )
+            else:
+                # For other joints, set zero torque or maintain the existing control mode
+                pb.setJointMotorControl2(
+                    bodyUniqueId=robotID,
+                    jointIndex=joint_index,
+                    controlMode=pb.POSITION_CONTROL,
+                    targetPosition=q[joint_index],
+                    positionGain=0.1,
+                    velocityGain=0.1
+                )
+
+        # Step the simulation
         pb.stepSimulation()
         time.sleep(simDT)
+        
 
 
     input("press ENTER to CLOSE the simulation:")
