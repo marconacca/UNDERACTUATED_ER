@@ -93,7 +93,7 @@ def simulate():
         time.sleep(simDT) """
         # read the current joint state from the simulator
         q, qdot = sim_utils.getState(robotID, jointIndices)    
-        control_torques = swing_up_control(robotModel, q, qdot, energy_des, qdes)
+        control_torques = swing_up_control(robotModel, q, qdot, qdes)
         print('***** control_torques: ', control_torques)
         print('\n')
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)

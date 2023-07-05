@@ -4,13 +4,13 @@ from stabilization import stabilization_controller
 from energy_analysis import compute_energy
 
 # Implement the swing-up control algorithm using Pinocchio
-def swing_up_control(model, q, qdot, desired_energy, desired_position):
+def swing_up_control(model, q, qdot, desired_position):
     # Energy shaping control
-    total_energy, M, C, G = compute_energy(model, q, qdot)
-    control_torques_energy_shaping = energy_shaping_controller(total_energy, desired_energy, q, qdot, M, C, G)
+    total_energy, desired_energy, M, C, G, gains = compute_energy(model, q, qdot)
+    control_torques_energy_shaping = energy_shaping_controller(model, total_energy, desired_energy, q, qdot, M, C, G, gains)
 
     # Stabilization control
-    pos_err, control_torques_stabilization = stabilization_controller(q, qdot, desired_position)
+    #pos_err, control_torques_stabilization = stabilization_controller(q, qdot, desired_position)
 
     #threshold to change the controller from energy to LQR
     eps = 0.3   # in rad or xz-position?
