@@ -11,7 +11,7 @@ import sim_utils
 def simulate():
 
     simDT = 1/60 # simulation timestep   (was 1/240)
-    simTime = 20 # total simulation time in seconds (was 25)
+    simTime = 25 # total simulation time in seconds (was 25)
     q0 = np.array([np.pi/2, 0]) # initial configuration
 
     robotID, robotModel = sim_utils.simulationSetup(simDT)

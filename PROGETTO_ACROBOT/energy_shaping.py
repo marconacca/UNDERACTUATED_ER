@@ -10,17 +10,8 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
 
     '''
 
-    #pin.forwardKinematics(robot.model, robot.data, q)
 
-    # Get the link lengths
-    # for i in range(1, robot.model.njoints):  # Skip the base link
-    #     parent_joint_id = robot.model.parents[i]
-    #     link_placement = robot.data.oMi[i]
-    #     parent_link_placement = robot.data.oMi[parent_joint_id]
-    #     link_length = np.linalg.norm((parent_link_placement.translation - link_placement.translation))
-    #     print(f"Link {i} length: {link_length}")
-
-
+# #########################   defining Parameters for the Control Law   #########################
 
     # dynamics and control components
     M_det = np.linalg.det(M)
@@ -33,30 +24,33 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     kd = gains[1]
     kv = gains[2]
 
-
-
-    
-
-
     # Compute the error between desired energy and current energy
     energy_error = desired_energy - current_energy
-    #print('desired_energy is: ', desired_energy)
-    print('energy_error is: ', energy_error)
 
-    print('q conf is: ', q)
-    print('qdot joint velocity is: ', qdot)
 
+
+    # #########################   CONTROL LAW tau2   #########################
 
     # Compute control torques
     tau2 = -( (kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1])) ) / ( energy_error*M_det+kd*M[0,0] )
-    #tau2 = ke * energy_error
+
+    control_torques = np.array([0, tau2])
+
+    # #########################  --------------------  #########################
+
+
+
+    # #########################   Values Check   #########################
+
+    #print('desired_energy is: ', desired_energy)
+    print('energy_error is: ', energy_error)
+    print('q conf is: ', q)
+    print('qdot joint velocity is: ', qdot)
     print('M is: ', M)
     print('C is: ', C)
     print('G is: ', G)
     print('[q1,q2] is: ', q)
     print('qdot is: ', qdot)
     print('  Tau2 is: ', tau2)
-
-    control_torques = np.array([0, tau2])
 
     return control_torques

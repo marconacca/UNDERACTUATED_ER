@@ -15,6 +15,7 @@ def compute_energy(robotModel, q, qdot):
     pin.updateFramePlacements(robotModel.model, robotModel.data)
 
 
+# #########################   Arm Parameters   #########################
 
     # # define parameters for energy computation
     l1 = 0.1425
@@ -44,7 +45,8 @@ def compute_energy(robotModel, q, qdot):
     # g = 9.8
 
 
-    # dinamics parameters
+# #########################   Dynamics Parameters   #########################
+
     alpha1 = m1*(lc1**2) + m2*(l1**2) + Iz1
     alpha2 = m2*(lc2**2) + Iz2
     alpha3 = m2*l1*lc2
@@ -57,7 +59,7 @@ def compute_energy(robotModel, q, qdot):
     # C = pin.computeCoriolisMatrix(robotModel.model, robotModel.data, q, qdot)
     # G = pin.computeGeneralizedGravity(robotModel.model, robotModel.data, q)
 
-    pin.computeAllTerms(robotModel.model, robotModel.data, q, qdot)
+    #pin.computeAllTerms(robotModel.model, robotModel.data, q, qdot)
     # M = robotModel.data.M
     # C = robotModel.data.C
     # G = robotModel.data.g
@@ -65,7 +67,6 @@ def compute_energy(robotModel, q, qdot):
     M = np.matrix([[alpha1+alpha2+2*alpha3*np.cos(q[0]), alpha2+alpha3*np.cos(q[1])],
                     [alpha2+alpha3*np.cos(q[1]), alpha2]])
     C = alpha3*np.array([-2*qdot[0]*qdot[1] - qdot[1]**2, qdot[0]**2])*np.sin(q[1])
-    #C = np.multiply(np.multiply(alpha3,np.array([-2*qdot[0]*qdot[1] - qdot[1]**2, qdot[0]**2])),np.sin(q[1]))
     G = np.array([beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]), beta2*np.cos(q[0]+q[1])])
 
     #M_det = np.linalg.det(M)
@@ -76,10 +77,9 @@ def compute_energy(robotModel, q, qdot):
     desired_energy = beta1 + beta2
 
 
-    #phi2 = math.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q[1]))
+# #########################   Compute Gains threshold to choose the gains kp, kd, kv   #########################
 
-
-    # Define the function
+    # Compute the threshold for kd gain
     def max_f_kd(q2):
         phi2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2))
         return (phi2 + desired_energy)*(alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2))/(alpha1+alpha2+2*alpha3*np.cos(q2)) 
@@ -90,6 +90,7 @@ def compute_energy(robotModel, q, qdot):
     thresh_kd = max( thresh_kd_vec)
     print('-----thresh_kd: ', thresh_kd)
 
+    # Compute the threshold for the kp gain
     thresh_kp = (2/np.pi)*min(beta1**2, beta2**2)
     print('-----thresh_kp: ', thresh_kp)
 
@@ -99,14 +100,11 @@ def compute_energy(robotModel, q, qdot):
     #kp > (2/np.pi)*min(beta1**2, beta2**2)          #(43 formula in paper)
     #kv > 0
 
-    # -------------------------   end function   -------------------------
 
-
-
-    # Define controller GAINS   (this choice is the one of the paper simulation realted to theorem 3 and satisfied theorem 2 condition (31) alpha<>0)
-    kp = 0.07    # Proportional gain  > 0.067684
-    kd = 0.005    # Dynamics gain          > 0.004364518
-    kv = 0.008   # Derivative gain
+    # Define controller GAINS
+    kp = 0.07    # Proportional gain    > 0.067684
+    kd = 0.005    # Dynamics gain       > 0.004364518
+    kv = 0.09   # Derivative gain
     gains = np.array([kp, kd, kv])
 
     # Paper Gains
@@ -116,6 +114,7 @@ def compute_energy(robotModel, q, qdot):
     # gains = np.array([kp, kd, kv])
 
 
+# #########################   Compute Energies (already done Desired_Energy)   #########################
 
     # Compute the kinetic energy
     #kinetic_energy = pin.computeKineticEnergy(robotModel.model, robotModel.data, q, qdot)
