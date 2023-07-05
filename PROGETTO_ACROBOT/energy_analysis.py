@@ -17,36 +17,36 @@ def compute_energy(robotModel, q, qdot):
 
 
     # # define parameters for energy computation
-    # l1 = 0.1425
-    # l2 = 0.2305
-    # lc1 = 0.035
-    # lc2 = 0.1
-    # m1 = 0.26703
-    # m2 = 0.33238
-    # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    # I1 = np.matrix([[0.00040827, 0, 0.000018738], [0, 0.00038791, 0], [0.000018738, 0, 0.000036421]])
-    # I2 = np.matrix([[0.0011753, 0, 0], [0, 0.0011666, 0], [0, 0, 0.000014553]])
-    # Iz1 = I1[2,2]
-    # Iz2 = I2[2,2]
-    # g = 9.81
+    l1 = 0.1425
+    l2 = 0.2305
+    lc1 = 0.035
+    lc2 = 0.1
+    m1 = 0.26703
+    m2 = 0.33238
+    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
+    I1 = np.matrix([[0.00040827, 0, 0.000018738], [0, 0.00038791, 0], [0.000018738, 0, 0.000036421]])
+    I2 = np.matrix([[0.0011753, 0, 0], [0, 0.0011666, 0], [0, 0, 0.000014553]])
+    Iz1 = I1[2,2]
+    Iz2 = I2[2,2]
+    g = 9.81
 
 
     # Paper parameters
-    l1 = 1
-    l2 = 2
-    lc1 = 0.5
-    lc2 = 1
-    m1 = 1
-    m2 = 1
-    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    Iz1 = 0.083
-    Iz2 = 0.33
-    g = 9.8
+    # l1 = 1
+    # l2 = 2
+    # lc1 = 0.5
+    # lc2 = 1
+    # m1 = 1
+    # m2 = 1
+    # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
+    # Iz1 = 0.083
+    # Iz2 = 0.33
+    # g = 9.8
 
 
     # dinamics parameters
-    alpha1 = m1*lc1**2 + m2*l1**2 + Iz1
-    alpha2 = m2*lc2**2 + Iz2
+    alpha1 = m1*(lc1**2) + m2*(l1**2) + Iz1
+    alpha2 = m2*(lc2**2) + Iz2
     alpha3 = m2*l1*lc2
     beta1 = (m1*lc1 + m2*l1)*g
     beta2 = m2*lc2*g
@@ -69,7 +69,7 @@ def compute_energy(robotModel, q, qdot):
     G = np.array([beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]), beta2*np.cos(q[0]+q[1])])
 
     #M_det = np.linalg.det(M)
-    M_det = alpha1*alpha2 - (alpha3**2)*(np.cos(q[1])**2)
+    M_det = alpha1*alpha2 - (alpha3**2)*((np.cos(q[1]))**2)
 
 
     # compute the desired energy (potential energy up-right position)
@@ -82,7 +82,7 @@ def compute_energy(robotModel, q, qdot):
     # Define the function
     def max_f_kd(q2):
         phi2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2))
-        return ((phi2 + desired_energy)*M_det)/(M[0,0]) 
+        return (phi2 + desired_energy)*(alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2))/(alpha1+alpha2+2*alpha3*np.cos(q2)) 
     
     q2_values = np.linspace(0, 2*(np.pi), 1000)
 
@@ -104,16 +104,16 @@ def compute_energy(robotModel, q, qdot):
 
 
     # Define controller GAINS   (this choice is the one of the paper simulation realted to theorem 3 and satisfied theorem 2 condition (31) alpha<>0)
-    # kp = 0.0005    # Proportional gain  > 0.000390288
-    # kd = 0.3    # Dynamics gain          > 0.1970
-    # kv = 0.000001   # Derivative gain
-    #gains = np.array([kp, kd, kv])
+    kp = 0.07    # Proportional gain  > 0.067684
+    kd = 0.005    # Dynamics gain          > 0.004364518
+    kv = 0.008   # Derivative gain
+    gains = np.array([kp, kd, kv])
 
     # Paper Gains
-    kp = 61.2    # Proportional gain
-    kd = 35.8    # Dynamics gain
-    kv = 66.3    # Derivative gain
-    gains = np.array([kp, kd, kv])
+    # kp = 61.2    # Proportional gain
+    # kd = 35.8    # Dynamics gain
+    # kv = 66.3    # Derivative gain
+    # gains = np.array([kp, kd, kv])
 
 
 

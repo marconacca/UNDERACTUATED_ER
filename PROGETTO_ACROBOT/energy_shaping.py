@@ -10,7 +10,7 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
 
     '''
 
-    pin.forwardKinematics(robot.model, robot.data, q)
+    #pin.forwardKinematics(robot.model, robot.data, q)
 
     # Get the link lengths
     # for i in range(1, robot.model.njoints):  # Skip the base link
