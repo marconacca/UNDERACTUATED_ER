@@ -18,31 +18,31 @@ def compute_energy(robotModel, q, qdot):
 # #########################   Arm Parameters   #########################
 
     # # define parameters for energy computation
-    l1 = 0.1425
-    l2 = 0.2305
-    lc1 = 0.035
-    lc2 = 0.1
-    m1 = 0.26703
-    m2 = 0.33238
-    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    I1 = np.matrix([[0.00040827, 0, 0.000018738], [0, 0.00038791, 0], [0.000018738, 0, 0.000036421]])
-    I2 = np.matrix([[0.0011753, 0, 0], [0, 0.0011666, 0], [0, 0, 0.000014553]])
-    Iz1 = I1[2,2]
-    Iz2 = I2[2,2]
-    g = 9.81
+    # l1 = 0.1425
+    # l2 = 0.2305
+    # lc1 = 0.035
+    # lc2 = 0.1
+    # m1 = 0.26703
+    # m2 = 0.33238
+    # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
+    # I1 = np.matrix([[0.00040827, 0, 0.000018738], [0, 0.00038791, 0], [0.000018738, 0, 0.000036421]])
+    # I2 = np.matrix([[0.0011753, 0, 0], [0, 0.0011666, 0], [0, 0, 0.000014553]])
+    # Iz1 = I1[2,2]
+    # Iz2 = I2[2,2]
+    # g = 9.81
 
 
     # Paper parameters
-    # l1 = 1
-    # l2 = 2
-    # lc1 = 0.5
-    # lc2 = 1
-    # m1 = 1
-    # m2 = 1
-    # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    # Iz1 = 0.083
-    # Iz2 = 0.33
-    # g = 9.8
+    l1 = 1
+    l2 = 2
+    lc1 = 0.5
+    lc2 = 1
+    m1 = 1
+    m2 = 1
+    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
+    Iz1 = 0.083
+    Iz2 = 0.33
+    g = 9.8
 
 
 # #########################   Dynamics Parameters   #########################
@@ -88,11 +88,11 @@ def compute_energy(robotModel, q, qdot):
 
     thresh_kd_vec = max_f_kd(q2_values)
     thresh_kd = max( thresh_kd_vec)
-    print('-----thresh_kd: ', thresh_kd)
+    #print('-----thresh_kd: ', thresh_kd)
 
     # Compute the threshold for the kp gain
     thresh_kp = (2/np.pi)*min(beta1**2, beta2**2)
-    print('-----thresh_kp: ', thresh_kp)
+    #print('-----thresh_kp: ', thresh_kp)
 
 
     #gains 1 condition
@@ -102,16 +102,19 @@ def compute_energy(robotModel, q, qdot):
 
 
     # Define controller GAINS
-    kp = 0.07    # Proportional gain    > 0.067684
-    kd = 0.005    # Dynamics gain       > 0.004364518
-    kv = 0.09   # Derivative gain
-    gains = np.array([kp, kd, kv])
+    # kp = 0.069    # Proportional gain    > 0.067684
+    # kd = 0.0048   # Dynamics gain       > 0.004364518
+    # kv = 0.1  # Derivative gain
+    # gains = np.array([kp, kd, kv])
 
     # Paper Gains
+    kp = 0.61    # Proportional gain
+    kd = 0.358   # Dynamics gain
+    kv = 0.663   # Derivative gain
     # kp = 61.2    # Proportional gain
     # kd = 35.8    # Dynamics gain
     # kv = 66.3    # Derivative gain
-    # gains = np.array([kp, kd, kv])
+    gains = np.array([kp, kd, kv])
 
 
 # #########################   Compute Energies (already done Desired_Energy)   #########################
@@ -119,7 +122,7 @@ def compute_energy(robotModel, q, qdot):
     # Compute the kinetic energy
     #kinetic_energy = pin.computeKineticEnergy(robotModel.model, robotModel.data, q, qdot)
     M = np.squeeze(np.asarray(M))
-    kinetic_energy = 0.5 * np.dot(qdot, np.dot((qdot.T), M))
+    kinetic_energy = 0.5 * np.dot(qdot.T, np.dot((qdot), M))
     
 
     # Compute the potential energy
