@@ -25,7 +25,7 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     kv = gains[2]
 
     # Compute the error between desired energy and current energy
-    energy_error = desired_energy - current_energy
+    energy_error = current_energy - desired_energy
 
 
 
@@ -42,13 +42,13 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
 
     # #########################   Values Check   #########################
 
-    #print('q conf is: ', q)
-    #print('qdot joint velocity is: ', qdot)
+    print('q configuration is: ', q)
+    print('qdot joint velocity is: ', qdot)
     print('M is: ', M)
     print('C is: ', C)
     print('G is: ', G)
     #print('desired_energy is: ', desired_energy)
-    #print('energy_error is: ', energy_error)
+    print('energy_error is: ', energy_error)
     #print('  Tau2 is: ', tau2)
 
     return control_torques

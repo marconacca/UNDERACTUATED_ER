@@ -12,7 +12,7 @@ def simulate():
 
     simDT = 1/240 # simulation timestep   (was 1/240)
     simTime = 25 # total simulation time in seconds (was 25)
-    q0 = np.array([np.pi/2, 0]) # initial configuration
+    q0 = np.array([0, 0]) # initial configuration
 
     robotID, robotModel = sim_utils.simulationSetup(simDT)
 
@@ -20,13 +20,13 @@ def simulate():
 
     # we are going to consider both revolute joints, so we fill the whole
     # joint indices list
-    jointIndices = range(nDof)
+    jointIndices = np.array([0,1])
+    print('jointIndices :', jointIndices)
 
     for i in jointIndices:
         pb.resetJointState(robotID, i, q0[i])
 
-    q, qdot = sim_utils.getState(robotID, jointIndices) 
-
+    q, qdot = sim_utils.getState(robotID, jointIndices)
     # print(controller.computeEEpose(robotModel, q))
 
 
@@ -45,24 +45,24 @@ def simulate():
 
 
     # set a desired joint configuration
-    qdes = np.array([0,0])
+    qdes = np.array([np.pi/2,0])
     qdotdes = np.array([0,0])
     #edes = 3.0
 
     # Compute the desired potential energy in vertical position
 
     # Set joint positions and velocities
-    pin.forwardKinematics(robotModel.model, robotModel.data, qdes)
+    # pin.forwardKinematics(robotModel.model, robotModel.data, qdes)
 
-    gravity = robotModel.model.gravity.linear[2]  # Assuming gravity is in the z-direction
-    des_potential_energy = 0.0
+    # gravity = robotModel.model.gravity.linear[2]  # Assuming gravity is in the z-direction
+    # des_potential_energy = 0.0
 
-    for i in range(robotModel.model.njoints):
-        com_pos = robotModel.data.oMi[i].translation
-        mass = robotModel.model.inertias[i].mass
-        des_potential_energy += mass * gravity * com_pos[2]
+    # for i in range(robotModel.model.njoints):
+    #     com_pos = robotModel.data.oMi[i].translation
+    #     mass = robotModel.model.inertias[i].mass
+    #     des_potential_energy += mass * gravity * com_pos[2]
 
-    energy_des = des_potential_energy
+    # energy_des = des_potential_energy
     # set a desired ee configuration
     # ee_des = np.array([0, 0.3])
 
@@ -74,23 +74,17 @@ def simulate():
 
     for i in range(int(simTime/simDT)):
 
-        """ # read the current joint state from the simulator
-        q, qdot = sim_utils.getState(robotID, jointIndices)    
 
-        # compute the feedback torque command
-        tau = controller.JointPositionControl(robotModel, q, qdot, qdes)
-        #tau = controller.EePositionController(robotModel, q, qdot, ee_des)
-
-        # send the torque command to the simulator
-        pb.setJointMotorControlArray(
-            robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = tau)
-
-        # advance the simulation one step
-        pb.stepSimulation()
-        time.sleep(simDT) """
         # read the current joint state from the simulator
-        q, qdot = sim_utils.getState(robotID, jointIndices)    
-        control_torques = swing_up_control(robotModel, q, qdot, qdes, qdotdes)
+        q, qdot = sim_utils.getState(robotID, jointIndices)
+        # angle wrapping between 0 and 2pi
+        joint_angles_wrapped = q % (2 * np.pi) 
+        # Define the maximum allowed velocity
+        max_velocity = 5.0
+        # Clamp joint velocities to the range [-max_velocity, max_velocity]
+        joint_velocities_clamped = np.clip(qdot, -max_velocity, max_velocity)
+
+        control_torques = swing_up_control(robotModel, joint_angles_wrapped, joint_velocities_clamped, qdes, qdotdes)
         print('***** control_torques: ', control_torques)
         print('\n')
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)

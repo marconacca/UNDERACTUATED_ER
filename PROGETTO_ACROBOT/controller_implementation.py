@@ -14,18 +14,19 @@ def swing_up_control(model, q, qdot, desired_position, desired_velocity):
     state_error, control_torques_stabilization = stabilization_controller(q, qdot, desired_position, desired_velocity)
 
     #threshold to change the controller from energy to LQR
-    eps = 3.0       # in rad or xz-position?
+    eps = 0.1       # in rad or xz-position?
 
-    # Combine control torques
-    # if (abs(state_error[0]) < eps) and (abs(state_error[1]) < eps):
-    #     control_torques = control_torques_stabilization
-    #     input("LQR-CONTROL:    press ENTER to continue:")
-    # else:
-    #     control_torques = control_torques_energy_shaping
-    #     #input("ENERGY-CONTROL:    press ENTER to continue:")
+    #Combine control torques
+    if (abs(state_error[0]) < eps) and (abs(state_error[1]) < 3*eps):
+        control_torques = control_torques_stabilization
+        print('state_error :', state_error)
+        input("LQR-CONTROL:    press ENTER to continue:")
+    else:
+        control_torques = control_torques_energy_shaping
+        #input("ENERGY-CONTROL:    press ENTER to continue:")
 
     #control_torques = control_torques_energy_shaping
-    control_torques = control_torques_stabilization
+    #control_torques = control_torques_stabilization
 
     #tau = pin.rnea(model, q, v, control_torques)
 
