@@ -44,11 +44,11 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
 
     print('q configuration is: ', q)
     print('qdot joint velocity is: ', qdot)
-    print('M is: ', M)
+    print('\nM is: ', M)
     print('C is: ', C)
     print('G is: ', G)
     #print('desired_energy is: ', desired_energy)
-    print('energy_error is: ', energy_error)
+    print('\n€€€€€ - Energy Error is: ', energy_error)
     #print('  Tau2 is: ', tau2)
 
     return control_torques

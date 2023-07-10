@@ -2,8 +2,8 @@ import pybullet as pb
 import time
 import numpy as np
 import pinocchio as pin
-from energy_analysis import compute_energy
 from controller_implementation import swing_up_control
+from dynamic_scipy import integration
 
 import sim_utils
 
@@ -76,21 +76,32 @@ def simulate():
 
 
         # read the current joint state from the simulator
-        q, qdot = sim_utils.getState(robotID, jointIndices)
-        # angle wrapping between 0 and 2pi
-        joint_angles_wrapped = q % (2 * np.pi) 
-        # Define the maximum allowed velocity
-        max_velocity = 5.0
-        # Clamp joint velocities to the range [-max_velocity, max_velocity]
-        joint_velocities_clamped = np.clip(qdot, -max_velocity, max_velocity)
+        #q, qdot = sim_utils.getState(robotID, jointIndices)
 
-        control_torques = swing_up_control(robotModel, joint_angles_wrapped, joint_velocities_clamped, qdes, qdotdes)
-        print('***** control_torques: ', control_torques)
+        # # angle wrapping between 0 and 2pi
+        # joint_angles_wrapped = q % (2 * np.pi) 
+        # #Define the maximum allowed velocity
+        # max_velocity = 5.0
+        # #Clamp joint velocities to the range [-max_velocity, max_velocity]
+        # joint_velocities_clamped = np.clip(qdot, -max_velocity, max_velocity)
+
+        control_torques = swing_up_control(robotModel, q, qdot, qdes, qdotdes)
+        print('\n***** control_torques: ', control_torques)
         print('\n')
+
+        # compute dynamics
+        q, qdot = integration(q, qdot, simDT ,control_torques)
+        # q angle wrapping between 0 and 2pi
+        #q = q % (2 * np.pi) 
+        
+        print('***** states : ', q, qdot)
+        print('\n')
+
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)
         # advance the simulation one step
         pb.stepSimulation()
         time.sleep(simDT)
+        #input('STO A FA LA COLLA!!\n')
 
 
     input("press ENTER to CLOSE the simulation:")

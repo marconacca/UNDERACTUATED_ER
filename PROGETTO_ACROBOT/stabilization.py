@@ -6,7 +6,7 @@ def stabilization_controller(q, qdot, desired_position, desired_velocity):
     # Compute the position error
     position_error = q - desired_position
     #print(' desired_position = ', desired_position)
-    print(' pos_err = ', position_error)
+    #print(' pos_err = ', position_error)
 
     # Compute the velocity error
     velocity_error = qdot - desired_velocity

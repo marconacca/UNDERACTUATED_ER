@@ -5,14 +5,14 @@ import numpy as np
 def compute_energy(robotModel, q, qdot):
     # data = model.createData()
 
-    # # Set joint positions and velocities
-    pin.forwardKinematics(robotModel.model, robotModel.data, q, qdot)
+    # # # Set joint positions and velocities
+    # pin.forwardKinematics(robotModel.model, robotModel.data, q, qdot)
 
-    # Compute joint Jacobians and joint Jacobian time variation
-    pin.computeJointJacobians(robotModel.model, robotModel.data, q)
-    pin.computeJointJacobiansTimeVariation(robotModel.model, robotModel.data, q, qdot)
-    # updates the position of each frame contained in the mode
-    pin.updateFramePlacements(robotModel.model, robotModel.data)
+    # # Compute joint Jacobians and joint Jacobian time variation
+    # pin.computeJointJacobians(robotModel.model, robotModel.data, q)
+    # pin.computeJointJacobiansTimeVariation(robotModel.model, robotModel.data, q, qdot)
+    # # updates the position of each frame contained in the mode
+    # pin.updateFramePlacements(robotModel.model, robotModel.data)
 
 
 # #########################   Arm Parameters   #########################
@@ -63,14 +63,17 @@ def compute_energy(robotModel, q, qdot):
     # C = robotModel.data.C
     # G = robotModel.data.g
 
+    print('q ', q)
+    print('qdot ', qdot)
+
     Ma = np.matrix([[alpha1+alpha2+2*alpha3*np.cos(q[0]), alpha2+alpha3*np.cos(q[1])],
                     [alpha2+alpha3*np.cos(q[1]), alpha2]])
     Co = alpha3*np.array([-2*qdot[0]*qdot[1] - qdot[1]**2, qdot[0]**2])*np.sin(q[1])
     Gr = np.array([beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]), beta2*np.cos(q[0]+q[1])])
 
-    robotModel.data.M = Ma
-    robotModel.data.C = Co
-    robotModel.data.g = Gr
+    # robotModel.data.M = Ma
+    # robotModel.data.C = Co
+    # robotModel.data.g = Gr
 
     #M_det = np.linalg.det(M)
     M_det = alpha1*alpha2 - (alpha3**2)*((np.cos(q[1]))**2)
@@ -106,8 +109,8 @@ def compute_energy(robotModel, q, qdot):
 
     # Define controller GAINS
     kp = 0.07    # Proportional gain    > 0.067684
-    kd = 0.005   # Dynamics gain       > 0.004364518
-    kv = 0.08    # Derivative gain
+    kd = 0.0045   # Dynamics gain       > 0.004364518
+    kv = 0.7    # Derivative gain
     gains = np.array([kp, kd, kv])
 
     # Paper Gains
