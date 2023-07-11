@@ -32,7 +32,15 @@ def simulationSetup(simDT):
 
     # load the robot model setting initial position and orientation of the base link
     startPos = [0,0,0.5]
-    startOrientation = pb.getQuaternionFromEuler([0,0,0])
+    startOrientation = pb.getQuaternionFromEuler([-np.pi/2,0,0])
+
+    # Define the length of the axis lines
+    axis_length = 1.0
+    line_width = 5.0
+    # Add lines for the X, Y, and Z axes
+    pb.addUserDebugLine([0, 0, 0], [axis_length, 0, 0], [1, 0, 0], lineWidth=line_width, parentObjectUniqueId=-1, parentLinkIndex=-1)
+    pb.addUserDebugLine([0, 0, 0], [0, axis_length, 0], [0, 1, 0], lineWidth=line_width, parentObjectUniqueId=-1, parentLinkIndex=-1)
+    pb.addUserDebugLine([0, 0, 0], [0, 0, axis_length], [0, 0, 1], lineWidth=line_width, parentObjectUniqueId=-1, parentLinkIndex=-1)
 
     dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
     urdf_filename = dir_path + "double_pendulum_simple.urdf"
@@ -59,13 +67,15 @@ def simulationSetup(simDT):
     # create the model of the robot
     robotModel = RobotModel(pin_model, pin_data)
 
-    return robotID, robotModel,pin_data
+    return robotID, robotModel
 
 
 
 def getState(robotID, jointList):
 
     currentJointStates = pb.getJointStates(robotID, jointList)
+    print('##### Joint State: ',currentJointStates)
+    #input("press ENTER to continue:")
     q = np.array([currentJointStates[jointIdx][0] for jointIdx in jointList])
     qdot = np.array([currentJointStates[jointIdx][1] for jointIdx in jointList])
 

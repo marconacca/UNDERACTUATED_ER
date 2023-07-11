@@ -1,31 +1,43 @@
 import numpy as np
-import control as control
-import pybullet as pb
-from control import StateSpace
-from control import lqr
-from control import ss
-import os
-import pinocchio as pin
-from scipy.linalg import solve_continuous_are
-import sim_utils
 
-def stabilization_controller(model,q1,q2,q1_dot,q2_dot,data,robotID,desired_position):
-    num_joints = pb.getNumJoints(robotID)
-    print(num_joints)
-    joint_indices = range(num_joints)
-    # Create the system matrices
-    A = np.zeros((num_joints, num_joints))
-    print(A)
-    B = np.zeros((num_joints, 1))
-    Q = np.diag([1.0] * num_joints)
-    R = np.array([[1.0]])
-    position = np.array([q1, np.pi/2, q1_dot, q2_dot])
-    desired_pos = np.array([desired_position[0], desired_position[1], q1_dot, q2_dot])
-    #position = np.array([np.pi/2, -np.pi/2, 0, 0])
-    # Compute the LQR gain
-    # K, S, E = lqr(A, B, Q, R)
-    # P = solve_continuous_are(A, B, Q, R)
-    # Compute the LQR gain
-    # K = np.linalg.inv(R) @ B.T @ P
-    F = np.array([-246.481,-98.690,-106.464,-50.138])
-    return -F@(position-desired_pos)
+def stabilization_controller(q, qdot, desired_position, desired_velocity):
+    # we should use a LQR control to stabilize at the end the acrobot (putting a threshold of the error in position)
+
+    # Compute the position error
+    # position_error = q - desired_position
+    positio_error = 0
+    velocity_error = 0
+    position_error = desired_position - q
+    #print(' desired_position = ', desired_position)
+    #print(' pos_err = ', position_error)
+
+    # Compute the velocity error
+    # velocity_error = qdot - desired_velocity
+    velocity_error = desired_velocity - qdot
+
+    state_error = np.concatenate((position_error,velocity_error))
+    actual_state = np.concatenate((q,qdot))
+
+
+    # Matrice K of LQR controller of the PAPER parameters
+    #K = np.array([-246.481, -98.690, -106.464, -50.138])
+    #K = np.array([-0.2481, -0.09690, -0.01464, -0.05138])
+
+    # matrice K for our model parameters
+    K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
+    # K = 1000* np.array([-1.4522,   -0.5400,   -0.2182,   -0.0850])
+    #K = 1000* np.array([ -4.5926,   -1.7075,   -0.6902,   -0.2689])
+
+    # Compute control torques
+    tau2 = np.dot(-K, state_error)
+    #tau2 = np.dot(-K, actual_state)
+
+    control_torques = np.array([0, tau2])
+
+
+    # print('actual_state = ', actual_state)
+    # print('tau2 = ', tau2)
+
+
+
+    return state_error, control_torques
