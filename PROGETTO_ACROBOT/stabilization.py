@@ -17,10 +17,10 @@ def stabilization_controller(q, qdot, desired_position, desired_velocity):
 
     # Matrice K of LQR controller of the PAPER parameters
     #K = np.array([-246.481, -98.690, -106.464, -50.138])
-    #K = np.array([-0.2481, -0.09690, -0.01464, -0.05138])
 
     # matrice K for our model parameters
-    K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
+    #K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
+    K = np.array([-4.605540, -1.710658,  -0.692076,  -0.269682])
 
 
     # Compute control torques

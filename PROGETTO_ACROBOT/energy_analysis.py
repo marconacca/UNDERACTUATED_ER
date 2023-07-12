@@ -94,11 +94,11 @@ def compute_energy(robotModel, q, qdot):
 
     thresh_kd_vec = max_f_kd(q2_values)
     thresh_kd = max( thresh_kd_vec)
-    #print('-----thresh_kd: ', thresh_kd)
+    print('-----thresh_kd: ', thresh_kd)
 
     # Compute the threshold for the kp gain
     thresh_kp = (2/np.pi)*min(beta1**2, beta2**2)
-    #print('-----thresh_kp: ', thresh_kp)
+    print('-----thresh_kp: ', thresh_kp)
 
 
     #gains 1 condition
@@ -107,10 +107,15 @@ def compute_energy(robotModel, q, qdot):
     #kv > 0
 
 
-    # Define controller GAINS
-    kp = 0.07    # Proportional gain    > 0.067684
-    kd = 0.0045   # Dynamics gain       > 0.004364518
-    kv = 0.7    # Derivative gain
+    # Define controller GAINS with getJointState pybullet function
+    # kp = 0.07    # Proportional gain    > 0.067684
+    # kd = 0.0045   # Dynamics gain       > 0.004364518
+    # kv = 0.7    # Derivative gain
+    # gains = np.array([kp, kd, kv])
+    # Define controller GAINS with our integration of the states
+    kp = 0.2    # Proportional gain    > 0.1970336
+    kd = 0.015   # Dynamics gain       > 0.0.0143357
+    kv = 0.21    # Derivative gain
     gains = np.array([kp, kd, kv])
 
     # Paper Gains
@@ -142,6 +147,7 @@ def compute_energy(robotModel, q, qdot):
 
     # Total Energy of the Acrobot system
     acrobot_energy = kinetic_energy + potential_energy
+    
 
 
     return acrobot_energy, desired_energy, Ma, Co, Gr, gains

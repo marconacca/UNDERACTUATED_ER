@@ -22,24 +22,23 @@ def integration(q, qdot, time, torques):
     timesteps = np.linspace(0, time, 10)
     #print('timesteps: %s' % timesteps)
     states = odeint(dynamics, initial_state, timesteps, args=(torques,))
-    print('!!!!!!!!!!!!! States: ', states)
-    #qdd = dynamics(q,qdot,torques)
-    # Euler integration
+    #print('!!!!!!!!!!!!! States: ', states)
+    
+
+    # qdd = dynamics(initial_state, time,torques)
+    # # Euler integration
     # qdot1 = qd0 + qdd*time
     # q1 = q0 + qdot1*time
 
     # Retrieve the joint positions, velocities, and accelerations
     positions = states[:, :2]  # n: number of joints
     velocities = states[:, 2:]
-
-    # Access specific time step values, e.g., positions at t=2.5s
-    # index = np.where(time == 2.5)[0][0]
-    # q_2_5s = positions[index]
     #print('positions: %s\n, velocities %s\n' % (positions, velocities))
     #input('dajedajedajed')
     #print(positions, velocities)
 
     return positions[-1,:], velocities[-1,:]
+    #return q1, qdot1
 
 
 
@@ -58,7 +57,7 @@ def dynamics(state, tstep, torques):
     l1 = 0.1425
     l2 = 0.2305
     lc1 = 0.035
-    lc2 = 0.1 + l1
+    lc2 = 0.1
     m1 = 0.26703
     m2 = 0.33238
     # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
@@ -68,7 +67,7 @@ def dynamics(state, tstep, torques):
     Iz2 = I2[2,2]
     g = 9.81
 
-    d11 = m1 * lc1**2 + m2*(l1**2 + lc2**2 + 2*l1*lc2)*np.cos(q[1])
+    d11 = m1 * lc1**2 + m2*(l1**2 + lc2**2 + 2*l1*lc2)*np.cos(q[1]) + Iz1 + Iz1
     d12 = m2*(lc2**2 + l1*lc2*np.cos(q[1])) + Iz2
     d22 = m2 * lc2**2 + Iz2
 
@@ -88,9 +87,9 @@ def dynamics(state, tstep, torques):
 
     qdotdot = np.array([q1_dot_dot, q2_dot_dot])
 
-    #print(' qdd1 acceleration: ',q1_dot_dot)
-    #print(' qdd2 acceleration: ',q2_dot_dot)
-    #input('stoppa n attimo e vediamo le accelerazioni')
+    # print(' qdd1 acceleration: ',q1_dot_dot)
+    # print(' qdd2 acceleration: ',q2_dot_dot)
+    # input('stoppa n attimo e vediamo le accelerazioni')
     
     
     
@@ -98,3 +97,4 @@ def dynamics(state, tstep, torques):
     
     # Return the derivatives of the state [qdot, qdotdot]
     return np.concatenate([qdot, qdotdot])
+    #return qdotdot

@@ -74,7 +74,7 @@ def simulationSetup(simDT):
 def getState(robotID, jointList):
 
     currentJointStates = pb.getJointStates(robotID, jointList)
-    print('##### Joint State: ',currentJointStates)
+    #print('##### Joint State: ',currentJointStates)
     #input("press ENTER to continue:")
     q = np.array([currentJointStates[jointIdx][0] for jointIdx in jointList])
     qdot = np.array([currentJointStates[jointIdx][1] for jointIdx in jointList])
