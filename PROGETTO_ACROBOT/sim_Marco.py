@@ -1,5 +1,4 @@
 import numpy as np
-import control
 import sim_utils
 import pybullet as pb
 from acro_dynamics import *
