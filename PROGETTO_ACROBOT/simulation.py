@@ -4,6 +4,7 @@ import numpy as np
 import pinocchio as pin
 from controller_implementation import swing_up_control
 from dynamic_scipy import integration
+from acro_dynamics import *
 
 import sim_utils
 
@@ -13,9 +14,9 @@ def simulate():
     simDT = 1/240 # simulation timestep   (was 1/240)
     simTime = 25 # total simulation time in seconds (was 25)
 
-    q_curr = np.array([0,0])
+    q_curr = np.array([-np.pi,0])
     qdot_curr = np.array([0,0])
-    qdes_curr = np.array([np.pi/2,0])
+    qdes_curr = np.array([0,0])
     qdotdes_curr = np.array([0,0])
         # we are going to consider both revolute joints, so we fill the whole
     # joint indices list
@@ -42,9 +43,22 @@ def simulate():
         errorq1 = q_des[0] - q[0]
         errorq2 = q_des[1] - q[1]
         if (abs(errorq1) < 0.2) and (abs(errorq2) < 0.2):
-            # control_torques = control_torques_stabilization
             input("LQR-CONTROL:    press ENTER to continue:")
-        #input("ENERGY-CONTROL:    press ENTER to continue:")
+            for _ in range(int(simTime/simDT)):
+                error = q_des - q
+                print("STO STAMPANDO L'ERRORE: \n")
+                print(error)
+                K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
+                control_input = np.dot(-K, error)  # Apply control law, K is the controller gain matrix
+                print("STO STAMPANDO IL TORQUE: \n")
+                print(control_input)
+                control_torque = np.array([0,control_input])
+                pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torque)
+                # Simulate the dynamics of the acrobot for one time step
+                next_state = acrobot_dynamics(q, control_input, 1/240)  # Update the state based on dynamics
+                # Update the current state
+                q = next_state
+            break
         control_torques = swing_up_control(robotModel, q_curr, qdot_curr, qdes_curr, qdotdes_curr)
         print('\n***** control_torques: ', control_torques)
         print('\n')

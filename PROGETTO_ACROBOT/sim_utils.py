@@ -32,7 +32,7 @@ def simulationSetup(simDT):
 
     # load the robot model setting initial position and orientation of the base link
     startPos = [0,0,0.5]
-    startOrientation = pb.getQuaternionFromEuler([-np.pi/2,0,0])
+    startOrientation = pb.getQuaternionFromEuler([0,0,0])
 
     # Define the length of the axis lines
     axis_length = 1.0
@@ -74,7 +74,6 @@ def simulationSetup(simDT):
 def getState(robotID, jointList):
 
     currentJointStates = pb.getJointStates(robotID, jointList)
-    print('##### Joint State: ',currentJointStates)
     #input("press ENTER to continue:")
     q = np.array([currentJointStates[jointIdx][0] for jointIdx in jointList])
     qdot = np.array([currentJointStates[jointIdx][1] for jointIdx in jointList])

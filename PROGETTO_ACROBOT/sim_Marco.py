@@ -49,9 +49,6 @@ def simulate():
     # Convert the state history list to a NumPy array
     state_history = np.array(state_history)
 
-    # Plot the results or perform further analysis
-    # ...
-
     input("press ENTER to CLOSE the simulation:")
 
     pb.disconnect()
