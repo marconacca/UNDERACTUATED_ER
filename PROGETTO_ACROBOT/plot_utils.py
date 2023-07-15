@@ -10,14 +10,19 @@ def init_plot(plt, xAxisLabel, yAxisLabel, title):
         
 
 
-
+def csv_write(x, y, fileName):
+    with open(fileName + '.csv', 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=';')
+        if csvfile.tell() == 0:
+            writer.writerow(['X', 'Y'])
+        writer.writerow([x, y])
 
 def update_plot(plt, x, y, xAxisLabel, yAxisLabel, title, fileName):
     # Clear the plot before to add a new point
-    #plt.clear()
+    plt.clear()
 
     # Update the data
-    plt.plot(x, y, 'o', color='red')
+    plt.plot( x, y, '-bo')
 
     # Set labels and title
     plt.set_xlabel(xAxisLabel)
@@ -26,18 +31,6 @@ def update_plot(plt, x, y, xAxisLabel, yAxisLabel, title, fileName):
 
     # Save the plot as a PNG image
     plt.figure.savefig(fileName + '.png', format='png')
-
-    # Save the points as a CSV file
-    with open(fileName + '.csv', 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=';')
-        if csvfile.tell() == 0:
-            writer.writerow(['X', 'Y'])
-        writer.writerow([x, y])
-
-    # Display the plot
-    #plt.pause(0.001)
-    plt.figure.canvas.draw()
-    plt.figure.canvas.flush_events()
 
 
 

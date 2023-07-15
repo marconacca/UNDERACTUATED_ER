@@ -121,8 +121,18 @@ def simulate():
     else:
         os.makedirs(folder_path, exist_ok=True)
 
+    # Generate a unique filename for each plot
+        filename1 = os.path.join(folder_path, f'torque')
+        filename2 = os.path.join(folder_path, f'energy')
+        filename3 = os.path.join(folder_path, f'q')
+        filename4 = os.path.join(folder_path, f'qdot')
+
     # Initialize start time
     start_time = time.time()
+    
+    xValues = []
+    tau_yValues = []
+    energy_yValues = []
     
     # Control loop
     input("press ENTER to START the simulation:")
@@ -139,16 +149,18 @@ def simulate():
         tauY = control_input  # y-coordinate of the point
         energyY = energy
 
+        xValues.append(x)
+        tau_yValues.append(tauY)
+        energy_yValues.append(energy)
 
-        # Generate a unique filename for each plot
-        filename1 = os.path.join(folder_path, f'torque')
-        filename2 = os.path.join(folder_path, f'energy')
-        filename3 = os.path.join(folder_path, f'q')
-        filename4 = os.path.join(folder_path, f'qdot')
+        # Update the csv
+        plot_utils.csv_write(x, tauY, filename1)
+        plot_utils.csv_write(x, energyY, filename2)
+        
 
         # Update the plot
-        plot_utils.update_plot(tauPlot, x, tauY, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
-        plot_utils.update_plot(energyPlot, x, energyY, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
+        plot_utils.update_plot(tauPlot, xValues, tau_yValues, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
+        plot_utils.update_plot(energyPlot, xValues, energy_yValues, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
         plot_utils.update_2line_plot(qPlot, x, (current_state[0] - 1.57), current_state[1],  'Time [s]', '[rad]', 'q1-pi/2', 'q1', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
         plot_utils.update_2line_plot(qdotPlot, x, dot_current_state[0], dot_current_state[1],  'Time [s]', '[rad/s]', 'q1dot', 'q1dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
         
