@@ -34,6 +34,14 @@ def simulationSetup(simDT):
     startPos = [0,0,0.5]
     startOrientation = pb.getQuaternionFromEuler([0,0,0])
 
+    # Define the length of the axis lines
+    axis_length = 1.0
+    line_width = 5.0
+    # Add lines for the X, Y, and Z axes
+    pb.addUserDebugLine([0, 0, 0], [axis_length, 0, 0], [1, 0, 0], lineWidth=line_width, parentObjectUniqueId=-1, parentLinkIndex=-1)
+    pb.addUserDebugLine([0, 0, 0], [0, axis_length, 0], [0, 1, 0], lineWidth=line_width, parentObjectUniqueId=-1, parentLinkIndex=-1)
+    pb.addUserDebugLine([0, 0, 0], [0, 0, axis_length], [0, 0, 1], lineWidth=line_width, parentObjectUniqueId=-1, parentLinkIndex=-1)
+
     dir_path = os.path.dirname(os.path.realpath(__file__)) + "/"
     urdf_filename = dir_path + "double_pendulum_simple.urdf"
 
@@ -66,6 +74,7 @@ def simulationSetup(simDT):
 def getState(robotID, jointList):
 
     currentJointStates = pb.getJointStates(robotID, jointList)
+    #input("press ENTER to continue:")
     q = np.array([currentJointStates[jointIdx][0] for jointIdx in jointList])
     qdot = np.array([currentJointStates[jointIdx][1] for jointIdx in jointList])
 
