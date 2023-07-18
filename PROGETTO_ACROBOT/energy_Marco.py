@@ -1,5 +1,4 @@
 import numpy as np
-import control
 import time
 import sim_utils
 import pybullet as pb
