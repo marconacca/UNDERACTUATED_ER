@@ -2,83 +2,147 @@ import pybullet as pb
 import time
 import numpy as np
 import pinocchio as pin
-from controller_implementation import swing_up_control
+import plot_utils
+import matplotlib.pyplot as plt
+import shutil
+import os
+from controller_implementation import *
 from dynamic_scipy import integration
 from acro_dynamics import *
 
 import sim_utils
 
 
+
 def simulate():
 
-    simDT = 1/240 # simulation timestep   (was 1/240)
-    simTime = 25 # total simulation time in seconds (was 25)
+    # /////////////////////   SIMULATION SETTINGS   /////////////////////
+    simDT = 1/240 # simulation timestep 
+    simTime = 25 # total simulation time in seconds
 
-    q_curr = np.array([-np.pi,0])
-    qdot_curr = np.array([0,0])
-    qdes_curr = np.array([0,0])
-    qdotdes_curr = np.array([0,0])
-        # we are going to consider both revolute joints, so we fill the whole
-    # joint indices list
-    jointIndices = np.array([0,1])
+    q0 = np.array([-1.4, 0]) # initial configuration
+    qdot0 = np.array([0, 0]) # initial velocity
+    initial_state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])  # Initial state [q1, q2, dq1, dq2]
+
+    qdes = np.array([np.pi/2,0]) # desired configuration
+    qdotdes = np.array([0,0]) # desired velocity
+    desired_state = np.array([np.pi/2, 0, 0, 0])  # Desired state for stabilization [q1, q2, dq1, dq2]
+
     robotID, robotModel = sim_utils.simulationSetup(simDT)
 
-    print('jointIndices :', jointIndices)
+    nDof = 2
+
+    # we are going to consider both revolute joints, so we fill the whole
+    # joint indices list
+    jointIndices = range(nDof)
+
     for i in jointIndices:
-        pb.resetJointState(robotID, i, q_curr[i])
+        pb.resetJointState(robotID, i, q0[i])
 
-    q_curr = q_curr % (2 * np.pi)
-    qdot_curr = qdot_curr % (2 * np.pi)
-    qdes_curr = qdes_curr % (2 * np.pi)
-    qdotdes_curr = qdotdes_curr % (2 * np.pi)
+    q, qdot = sim_utils.getState(robotID, jointIndices) 
+
+    q1_collection = []
+    q2_collection = []
+    q1dot_collection = []
+    q2dot_collection = []
+    taus_collection = []
+    energy_collection = []
 
 
-    # ********************   SIMULATION CYCLE   ********************
+    # /////////////////////   PLOTS SETTINGS  /////////////////////
+    
+    #plt.ion() # Initialize the figure
+
+    # Create the plots
+    #fig1, tauPlot = plt.subplots()
+    #fig2, energyPlot = plt.subplots()
+    #fig3, qPlot = plt.subplots()
+    #fig4, qdotPlot = plt.subplots()
+
+    # Plot the initial empty data
+    #plot_utils.init_plot(tauPlot, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase')
+    #plot_utils.init_plot(energyPlot, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase')
+    #plot_utils.init_plot(qPlot, 'Time [s]', '[rad]', 'Time responses of states of the Acrobot in the swing-up phase')
+    #plot_utils.init_plot(qdotPlot, 'Time [s]', '[rad/s]', 'Time responses of states of the Acrobot in the swing-up phase')
+
+    # /////////////////////   FILE.csv SETTINGS  /////////////////////
+    # Create a directory for the files
+    folder_path ='plots'
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+        os.makedirs(folder_path, exist_ok=True)
+    else:
+        os.makedirs(folder_path, exist_ok=True)
+
+    # Generate a unique filename for each plot
+    filename1 = os.path.join(folder_path, f'torque')
+    filename2 = os.path.join(folder_path, f'energy')
+    filename3 = os.path.join(folder_path, f'q')
+    filename4 = os.path.join(folder_path, f'qdot')
+
+    # Initialize start time
+    start_time = time.time()
+    time_x_collection = []
 
     input("press ENTER to START the simulation:")
 
     for i in range(int(simTime/simDT)):
-        q = np.concatenate([q_curr, qdot_curr])
-        q_des = np.concatenate([qdes_curr, qdotdes_curr])
-        errorq1 = q_des[0] - q[0]
-        errorq2 = q_des[1] - q[1]
-        if (abs(errorq1) < 0.2) and (abs(errorq2) < 0.2):
-            input("LQR-CONTROL:    press ENTER to continue:")
-            for _ in range(int(simTime/simDT)):
-                error = q_des - q
-                print("STO STAMPANDO L'ERRORE: \n")
-                print(error)
-                K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
-                control_input = np.dot(-K, error)  # Apply control law, K is the controller gain matrix
-                print("STO STAMPANDO IL TORQUE: \n")
-                print(control_input)
-                control_torque = np.array([0,control_input])
-                pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torque)
-                # Simulate the dynamics of the acrobot for one time step
-                next_state = acrobot_dynamics(q, control_input, 1/240)  # Update the state based on dynamics
-                # Update the current state
-                q = next_state
-            break
-        control_torques = swing_up_control(robotModel, q_curr, qdot_curr, qdes_curr, qdotdes_curr)
-        print('\n***** control_torques: ', control_torques)
-        print('\n')
-        print('***** states : ', q_curr, qdot_curr)
-        print('\n')
-        pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)
 
-        # compute dynamics
-        # nextstate = integration(q_curr, qdot_curr, simDT ,control_torques)
-        q_curr, qdot_curr = sim_utils.getState(robotID, jointIndices)
-        q_curr = q_curr % (2 * np.pi)
-        qdot_curr = qdot_curr % (2 * np.pi)
+        current_time = time.time()
+        time_diff = current_time - start_time
+        x = time_diff
+
+        # read the current joint state from the simulator
+        #q, qdot = sim_utils.getState(robotID, jointIndices)    
+
+        # compute the feedback torque command
+        torques, energy_error = swing_up_control(robotModel, q, qdot)
+        #if (switch(q, qdot) and i != 0):
+            #torques,state_error = stabilization_control(robotModel, q, qdot, qdes, qdotdes)
+            
+
+
+        
+
+        time_x_collection.append(x)
+        taus_collection.append(torques[1])
+        energy_collection.append(energy_error)
+        q1_collection.append(q[0] - ((np.pi / 2) % np.pi))
+        q2_collection.append(q[1])
+        q1dot_collection.append(qdot[0])
+        q2dot_collection.append(qdot[1])
+
+        # send the torque command to the simulator
+        pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = torques)
+
+        # Dynamics and our Euler Integration  
+        q_next,qdot_next = acrobot_dynamics(q, qdot, torques, simDT)
+        #store the new state
+        q = q_next
+        qdot = qdot_next
+
+        
+
+
+        # Update the csv
+        plot_utils.csv_write(x, torques[1], filename1)
+        plot_utils.csv_write(x, energy_error, filename2)
+        plot_utils.csv_write_multiple(x, (q[0] - ((np.pi / 2) % np.pi)), q[1], filename3)
+        plot_utils.csv_write_multiple(x, qdot[0], qdot[1], filename4)
+        
+
+        # Update the plot
+        #plot_utils.update_plot(tauPlot, time_x_collection, taus_collection, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
+        #plot_utils.update_plot(energyPlot, time_x_collection, energy_collection, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
+        #plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1-pi/2', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
+        #plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q1dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
+
+        # advance the simulation one step
         pb.stepSimulation()
         time.sleep(simDT)
-        # q_kkr = np.array([26.70080267,-16.83162615])
-        # for i in jointIndices:
-        #     pb.resetJointState(robotID, i, q_kkr[i])
 
-        #input("Press ENTER to continue")
-
+    # Disable interactive mode after the loop
+    #plt.ioff()
 
     input("press ENTER to CLOSE the simulation:")
 

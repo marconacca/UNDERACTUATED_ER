@@ -10,12 +10,8 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
 
     '''
 
-
-# #########################   defining Parameters for the Control Law   #########################
-
-    # dynamics and control components
-    M_det = np.linalg.det(M)
-    #coriolis_forces = np.dot(C, qdot)
+    # dynamics and control parameters
+    delta = np.linalg.det(M)
     h1 = C[0]
     h2 = C[1]
 
@@ -27,19 +23,9 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     # Compute the error between desired energy and current energy
     energy_error = current_energy - desired_energy
 
-
-
-    # #########################   CONTROL LAW tau2   #########################
-
     # Compute control torques
-    tau2 = -( (kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1])) ) / ( energy_error*M_det+kd*M[0,0] )
+    tau2 = -((kv*qdot[1] + kp*q[1])*delta + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1]))) / ((kd*M[0,0]) + (energy_error*delta))
 
     control_torques = np.array([0, tau2])
 
-    # #########################  --------------------  #########################
-
-
-
-    # #########################   Values Check   #########################
-
-    return control_torques
+    return control_torques, energy_error

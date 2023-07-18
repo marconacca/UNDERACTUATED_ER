@@ -4,40 +4,24 @@ def stabilization_controller(q, qdot, desired_position, desired_velocity):
     # we should use a LQR control to stabilize at the end the acrobot (putting a threshold of the error in position)
 
     # Compute the position error
-    # position_error = q - desired_position
-    positio_error = 0
-    velocity_error = 0
-    position_error = desired_position - q
-    #print(' desired_position = ', desired_position)
-    #print(' pos_err = ', position_error)
+    position_error = q - desired_position
 
     # Compute the velocity error
-    # velocity_error = qdot - desired_velocity
-    velocity_error = desired_velocity - qdot
+    velocity_error = qdot - desired_velocity
 
     state_error = np.concatenate((position_error,velocity_error))
-    actual_state = np.concatenate((q,qdot))
 
+    x = np.array([q[0]-np.pi/2, q[1], qdot[0], qdot[1]])
 
     # Matrice K of LQR controller of the PAPER parameters
-    #K = np.array([-246.481, -98.690, -106.464, -50.138])
-    #K = np.array([-0.2481, -0.09690, -0.01464, -0.05138])
+    K = np.array([-246.481, -98.690, -106.464, -50.138])
 
-    # matrice K for our model parameters
-    K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
-    # K = 1000* np.array([-1.4522,   -0.5400,   -0.2182,   -0.0850])
-    #K = 1000* np.array([ -4.5926,   -1.7075,   -0.6902,   -0.2689])
+    # Matrice K for our model parameters
+    #K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
 
     # Compute control torques
-    tau2 = np.dot(-K, state_error)
-    #tau2 = np.dot(-K, actual_state)
+    tau2 = np.dot(-K, x)
 
     control_torques = np.array([0, tau2])
 
-
-    # print('actual_state = ', actual_state)
-    # print('tau2 = ', tau2)
-
-
-
-    return state_error, control_torques
+    return control_torques, state_error

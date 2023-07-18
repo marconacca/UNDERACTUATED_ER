@@ -3,10 +3,12 @@ import sim_utils
 import pybullet as pb
 
 
-def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
+def acrobot_dynamics(q, qdot, control_input, dt):
     # Extract the state variables
-    q = np.array([q1,q2])
-    qdot = np.array([dq1,dq2])
+    q1 = q[0]
+    q2 = q[1]
+    dq1 = qdot[0]
+    dq2 = qdot[1]
     
     # Define the acrobot parameters
     # l1 = 0.1425
@@ -29,7 +31,7 @@ def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
     I1 = 0.083
     I2 = 0.33
     g = 9.81
-    tau = control_input
+    tau2 = control_input[1]
 
     alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
     alpha2 = m2*(lc2**2) + I2
@@ -52,7 +54,7 @@ def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
     G2 = beta2*np.cos(q1+q2)
     qdot = np.array([dq1,dq2])
     E = 0.5*np.dot(np.dot(qdot.T, M),qdot) + beta1*np.sin(q1) + beta2*np.sin(q1+q2)
-    delta = alpha1*alpha2 - (alpha3**2)*np.cos(q2)**2
+    delta = alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2)
     #E = 0.5*np.dot(qdot.T,np.dot(M,qdot)) + beta1*(np.cos(q[0]) - 1) + beta2*(np.cos(q[1]) - 1)
     # Er = -2*(beta1+beta2)
     Er = (beta1+beta2)
@@ -70,18 +72,30 @@ def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
     # phi2 = m2*lc2*g*np.cos(q[0]+ q[1])
 
     # Compute the joint accelerations using the equations of motion
-    # ddq2 = (d11*(tau - c2 -phi2) + d12*(c1+phi1))/(d11*d22 - d12**2)
+    # ddq2 = (d11*(tau2 - c2 -phi2) + d12*(c1+phi1))/(d11*d22 - d12**2)
     # ddq1 = (d12*ddq2 + c1 + phi1)/(-d11)
 
-    ddq1 =  - (M21*tau - G2*M21 + G1*M22 - H2*M21 + H1*M22)/(M11*M22 - M21*M21)
-    ddq2 = (M11*tau - G2*M11 + G1*M21 - H2*M11 + H1*M21)/(M11*M22 - M21*M21)
+    ddq1 =  - (M21*tau2 - G2*M21 + G1*M22 - H2*M21 + H1*M22)/(M11*M22 - M21*M21)
+    ddq2 = (M11*tau2 - G2*M11 + G1*M21 - H2*M11 + H1*M21)/(M11*M22 - M21*M21)
+
+    # Update the state with Integration
+    b = control_input - C - G
+    x = np.linalg.solve(M, b)
+
+    next_dq1 = dq1 + np.int64(x[0]) * dt
+    next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
+    next_q1 = q1 + next_dq1 * dt
+    next_q2 = q2 + next_dq2 * dt
+
     
     # Update the state variables using Euler's method
-    next_q1 = q1 + dq1 * dt
-    next_q2 = q2 + dq2 * dt
-    next_dq1 = dq1 + ddq1 * dt
-    next_dq2 = dq2 + ddq2 * dt
+    # next_dq1 = dq1 + ddq1 * dt
+    # next_dq2 = dq2 + ddq2 * dt
+    # next_q1 = q1 + next_dq1 * dt
+    # next_q2 = q2 + next_dq2 * dt
 
     # Return the updated state
-    next_state = np.array([next_q1, next_q2, next_dq1, next_dq2])
-    return next_state
+    #next_state = np.array([next_q1, next_q2, next_dq1, next_dq2])
+    #return next_state
+    
+    return [next_q1, next_q2], [next_dq1, next_dq2]

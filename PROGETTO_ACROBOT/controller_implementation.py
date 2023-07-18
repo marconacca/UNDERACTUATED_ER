@@ -5,37 +5,29 @@ from stabilization import stabilization_controller
 from energy_analysis import compute_energy
 
 # Implement the swing-up control algorithm using Pinocchio
-def swing_up_control(model, q, qdot, desired_position, desired_velocity):
+def swing_up_control(model, q, qdot):
+
     # Energy shaping control
     total_energy, desired_energy, M, C, G, gains = compute_energy(model, q, qdot)
-    control_torques_energy_shaping = energy_shaping_controller(model, total_energy, desired_energy, q, qdot, M, C, G, gains)
+    control_torques_energy_shaping, energy_error = energy_shaping_controller(model, total_energy, desired_energy, q, qdot, M, C, G, gains)
 
-    # Stabilization control
-    state_error, control_torques_stabilization = stabilization_controller(q, qdot, desired_position, desired_velocity)
+    #current energy = current total energy of the system
+    #desired energy = total energy when the acrobot is at rest in vertical position (ideally only potential energy)
 
-    #threshold to change the controller from energy to LQR
-    eps = 0.3    # in rad or xz-position?
+    return control_torques_energy_shaping, energy_error
 
-    #Combine control torques
-    # if (abs(state_error[0]) < eps) and (abs(state_error[1]) < eps):
-    #     control_torques = control_torques_stabilization
-    #     input("LQR-CONTROL:    press ENTER to continue:")
-    # else:
-    #     control_torques = control_torques_energy_shaping
-    # if (abs(state_error[0]) < eps) and (abs(state_error[1]) < eps):
-    #     control_torques = control_torques_stabilization
-    #     input("LQR-CONTROL:    press ENTER to continue:")
-    # else:
-    #     control_torques = control_torques_energy_shaping
-    #     #input("ENERGY-CONTROL:    press ENTER to continue:")
+def stabilization_control(model, q, qdot, desired_position, desired_velocity):
 
+    # Stabilization control (LQR)
+    control_torques_stabilization, state_error = stabilization_controller(q, qdot, desired_position, desired_velocity)
 
-    #control_torques = control_torques_energy_shaping
-    #control_torques = control_torques_stabilization
+    return control_torques_stabilization, state_error
 
-    #tau = pin.rnea(model, q, v, control_torques)
+def switch(q, qdot):
 
-    # print('State Error vector is: \n',state_error)
+    zeta = 0.04 #threshold to switch controller (Energy to LQR) taken from paper
+    x_state = np.array([q[0]-np.pi/2, q[1], qdot[0], qdot[1]])
+    if ((abs(x_state[0]) + abs(x_state[1]) + 0.1*(abs(x_state[2])) + 0.1*(abs(x_state[3]))) < zeta):
+        return True
     
-
-    return control_torques_energy_shaping
+    return False

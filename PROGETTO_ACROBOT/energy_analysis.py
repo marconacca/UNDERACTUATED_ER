@@ -128,7 +128,7 @@ def compute_energy(robotModel, q, qdot):
     # Compute the kinetic energy
     #kinetic_energy = pin.computeKineticEnergy(robotModel.model, robotModel.data, q, qdot)
     Ma = np.squeeze(np.asarray(Ma))
-    kinetic_energy = 0.5 * np.dot(qdot.T, np.dot((qdot), Ma))
+    kinetic_energy = 0.5 * np.dot(qdot, np.dot((qdot), Ma))
     
 
     # Compute the potential energy
