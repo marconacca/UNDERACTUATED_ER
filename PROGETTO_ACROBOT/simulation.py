@@ -122,7 +122,8 @@ def simulate():
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = torques)
 
         # Dynamics and our Euler Integration  
-        q_next,qdot_next = acrobot_dynamics(q, qdot, torques, simDT)
+        #q_next,qdot_next = acrobot_dynamics(q, qdot, torques, simDT)
+        q_next,qdot_next = advance(q, qdot, torques, simDT)
         #store the new state
         q = q_next
         qdot = qdot_next
