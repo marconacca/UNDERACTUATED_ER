@@ -1,5 +1,5 @@
 % Read data from CSV file
-data = readtable('./plots/energy.csv');
+data = readtable('./plots/qdot.csv');
 
 % Extract x and y values from the table
 x = data.X;

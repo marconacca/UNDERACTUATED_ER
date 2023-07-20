@@ -110,13 +110,14 @@ def compute_energy(robotModel, mass, length, com, gravity, inertia, q, qdot):
     kd = 35.8    # Dynamics gain
     kv = 1    # Derivative gain
 
-    q2_values = np.linspace(0, 2*(np.pi), 1000) #for q2 belongs [0, 2pi] 
-    phi_q2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2_values))
+    #q2_values = np.linspace(0, 2*(np.pi), 1000) #for q2 belongs [0, 2pi] 
+    phi_q2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2))
 
-    kp_threshold = (2/np.pi)*min(beta1**2, beta2**2)#(43) in paper
+    kp_threshold = round((2/np.pi)*min(beta1**2, beta2**2))#(43) in paper
     
-    kd_threshold = max(((phi_q2 + desired_energy)*(alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2))/(alpha1+alpha2+2*alpha3*np.cos(q2_values))))#f(25) in paper
-    
+    #kd_threshold = max(((phi_q2 + desired_energy)*(alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2))/(alpha1+alpha2+2*alpha3*np.cos(q2_values))))#f(25) in paper
+    kd_threshold = ((phi_q2 + desired_energy)*delta/(alpha1+alpha2+2*alpha3*np.cos(q2)))#f(25) in paper
+
     if kp > kp_threshold:
         print(f"Kp={kp} fulfills the convergence property kp > {kp_threshold}")
     else:

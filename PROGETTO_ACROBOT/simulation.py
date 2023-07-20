@@ -48,6 +48,8 @@ def simulate():
     taus_collection = []
     energy_collection = []
 
+    energy_error = 0
+
 
     # /////////////////////   PLOTS SETTINGS  /////////////////////
     
@@ -102,7 +104,6 @@ def simulate():
             torques, energy_error = swing_up_control(robotModel, q, qdot, False)
         else:
             print('***** yes switch : ')
-            energy_error = 0
             torques,state_error = stabilization_control(robotModel, q, qdot, qdes, qdotdes)
             
 
