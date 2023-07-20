@@ -6,6 +6,7 @@ import plot_utils
 import matplotlib.pyplot as plt
 import shutil
 import os
+from integrator import *
 from controller_implementation import *
 from dynamic_scipy import integration
 from acro_dynamics import *
@@ -123,7 +124,9 @@ def simulate():
 
         # Dynamics and our Euler Integration  
         #q_next,qdot_next = acrobot_dynamics(q, qdot, torques, simDT)
-        q_next,qdot_next = advance(q, qdot, torques, simDT)
+        #q_next,qdot_next = advance(q, qdot, torques, simDT)
+        q_next,qdot_next = euler_integrator([q[0], q[1], qdot[0], qdot[1]], desired_state, simDT, torques)
+        #q_next,qdot_next = runge_integrator([q[0], q[1], qdot[0], qdot[1]], desired_state, simDT, torques)
         #store the new state
         q = q_next
         qdot = qdot_next

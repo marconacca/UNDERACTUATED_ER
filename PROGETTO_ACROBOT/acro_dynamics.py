@@ -95,6 +95,12 @@ def advance(q, qdot, control_input, dt):
     q2 = q[1]
     dq1 = qdot[0]
     dq2 = qdot[1]
+
+    q1 = (q[0]   - np.pi/2) 
+    q2 = (q[1] - q[0])
+    q = [(q[0]   - np.pi/2), (q[1] - q[0])]
+    dq1 = qdot[0]
+    dq2 = (qdot[1] - qdot[0])
     
     
 
