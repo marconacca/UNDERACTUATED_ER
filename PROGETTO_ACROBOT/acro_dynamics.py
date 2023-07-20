@@ -15,24 +15,32 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     # l1 = 0.1425
     # l2 = 0.2305
     # lc1 = 0.035
-    # lc2 = 0.1 + l1
-    # m1 = 0.26703
-    # m2 = 0.33238
-    # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    # I1 = 0.000036421
-    # I2 = 0.000014553
-
-    l1 = 1
-    l2 = 2
-    lc1 = 0.5
-    lc2 = 1
-    m1 = 1
-    m2 = 1
+    # lc2 = 0.1
+    l1 = 0.102611
+    l2 = 0.220227
+    lc1 = 0.0370271
+    lc2 = 0.101004
+    m1 = 0.26703
+    m2 = 0.33238
     # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    I1 = 0.083
-    I2 = 0.33
+    I1 = 0.00040827  # x-axis inertia
+    I2 = 0.0011753
+    #I1 = 0.000036421 #z-axis inertia
+    #I2 = 0.000014553
     g = 9.81
     tau2 = control_input[1]
+
+    # l1 = 1
+    # l2 = 2
+    # lc1 = 0.5
+    # lc2 = 1
+    # m1 = 1
+    # m2 = 1
+    # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
+    # I1 = 0.083
+    # I2 = 0.33
+    # g = 9.81
+    # tau2 = control_input[1]
 
     alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
     alpha2 = m2*(lc2**2) + I2
@@ -82,12 +90,15 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     # Update the state using some weird integration
     b = control_input - C - G
     x = np.linalg.solve(M, b)
-    print("Sto printando x: \n",np.int64(x))
+    #print("Sto printando x: \n",np.int64(x))
 
     next_dq1 = dq1 + np.int64(x[0]) * dt
     next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
     next_q1 = q1 + next_dq1 * dt
     next_q2 = q2 + next_dq2 * dt
+
+    nextq = np.array([next_q1, next_q2])
+    nextqdot = np.array([next_dq1, next_dq2])
 
     
     # Update the state variables using Euler's method
@@ -100,4 +111,4 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     #next_state = np.array([next_q1, next_q2, next_dq1, next_dq2])
     #return next_state
     
-    return [next_q1, next_q2], [next_dq1, next_dq2]
+    return nextq, nextqdot

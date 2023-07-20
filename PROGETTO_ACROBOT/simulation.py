@@ -87,8 +87,8 @@ def simulate():
 
 
         # # angle wrapping between 0 and 2pi
-        #joint_angles_wrapped = q % (2 * np.pi)
-        #joint_angles_wrapped = np.arctan2(np.sin(q), np.cos(q)) 
+        #q = q % (2 * np.pi)
+        #q = np.arctan2(np.sin(q), np.cos(q)) 
         #Define the maximum allowed velocity
         #max_velocity = 5.0
         #Clamp joint velocities to the range [-max_velocity, max_velocity]
@@ -100,12 +100,12 @@ def simulate():
 
     
         # **********   compute Dynamics and our Euler Integration   **********
-        #qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
-        qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
+        qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
+        # qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
         q = qnext
         qdot = qdotnext
         #q angle wrapping between 0 and 2pi  or  between -pi and pi
-        #q = q % (2 * np.pi)
+        q = q % (2 * np.pi)
         #q = np.arctan2(np.sin(q), np.cos(q))
         
         
