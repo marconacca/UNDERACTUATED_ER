@@ -49,9 +49,9 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     G = np.array([beta1*np.cos(q1) + beta2*np.cos(q1+q2), beta2*np.cos(q1+q2)]).T
     G1 = beta1*np.cos(q1) + beta2*np.cos(q1+q2)
     G2 = beta2*np.cos(q1+q2)
-    E = 0.5*np.dot(np.dot(qdot.T, M),qdot) + beta1*np.sin(q1) + beta2*np.sin(q1+q2)
-    delta = alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2)
-    Er = (beta1+beta2)
+    #E = 0.5*np.dot(np.dot(qdot.T, M),qdot) + beta1*np.sin(q1) + beta2*np.sin(q1+q2)
+    #delta = alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2)
+    #Er = (beta1+beta2)
 
     # Update the state with Integration
     b = torques - C - G
@@ -78,7 +78,7 @@ def acrobot_dynamics(q, qdot, control_input, dt):
 
     next_q1 = q1 + dt*dq1
     next_q2 = q2 + dt*dq2
-    next_dq1 = dq1 + dt*(x[0][0])
-    next_dq2 = dq2 + dt*(x[1][0])
+    next_dq1 = dq1 + dt*(x[0])
+    next_dq2 = dq2 + dt*(x[1])
     
     return [next_q1, next_q2], [next_dq1, next_dq2]
