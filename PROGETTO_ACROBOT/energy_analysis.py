@@ -2,7 +2,7 @@ import pinocchio as pin
 import numpy as np
 
 # Compute the potential and kinetic energy of the Acrobot system
-def compute_energy(robotModel, q, qdot):
+def compute_energy(robotModel, mass, length, com, gravity, inertia, q, qdot):
     # data = model.createData()
 
     # # # Set joint positions and velocities
@@ -15,42 +15,40 @@ def compute_energy(robotModel, q, qdot):
     # pin.updateFramePlacements(robotModel.model, robotModel.data)
 
 
-# #########################   Arm Parameters   #########################
-
-    # # define parameters for energy computation
-    l1 = 0.1425
-    l2 = 0.2305
-    lc1 = 0.035
-    lc2 = 0.1 + l1
-    m1 = 0.26703
-    m2 = 0.33238
-    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    I1 = np.matrix([[0.00040827, 0, 0.000018738], [0, 0.00038791, 0], [0.000018738, 0, 0.000036421]])
-    I2 = np.matrix([[0.0011753, 0, 0], [0, 0.0011666, 0], [0, 0, 0.000014553]])
-    Iz1 = I1[2,2]
-    Iz2 = I2[2,2]
-    g = 9.81
-
-
-    # Paper parameters
-    # l1 = 1
-    # l2 = 2
-    # lc1 = 0.5
-    # lc2 = 1
-    # m1 = 1
-    # m2 = 1
-    # Iz1 = 0.083
-    # Iz2 = 0.33
-    # g = 9.8
-
 
 # #########################   Dynamics Parameters   #########################
 
-    alpha1 = m1*(lc1**2) + m2*(l1**2) + Iz1
-    alpha2 = m2*(lc2**2) + Iz2
+    l1 = length[0]
+    l2 = length[1]
+    lc1 = com[0]
+    lc2 = com[1]
+    m1 = mass[0]
+    m2 = mass[1]
+    g = gravity
+    I1 = inertia[0]
+    I2 = inertia[1]
+
+
+    alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
+    alpha2 = m2*(lc2**2) + I2
     alpha3 = m2*l1*lc2
+
+    alphas = np.array([alpha1, alpha2, alpha3])
+
     beta1 = (m1*lc1 + m2*l1)*g
     beta2 = m2*lc2*g
+
+    betas = np.array([beta1, beta2])
+
+    if (alpha2*beta1) > (alpha3*beta2):
+        print(f"alpha2*beta1 > alpha3*beta2 fulfills the property")
+    else:
+        print(f"alpha2*beta1 > alpha3*beta2 does NOT fulfill property")
+
+    if (alpha3*beta1) >= (alpha1*beta2):
+        print(f"alpha3*beta1 >= alpha1*beta2 fulfills the property")
+    else:
+        print(f"alpha3*beta1 >= alpha1*beta2 does NOT fulfill property")
 
 
     # Compute the dynamics matrices
@@ -63,72 +61,87 @@ def compute_energy(robotModel, q, qdot):
     # C = robotModel.data.C
     # G = robotModel.data.g
 
-    Ma = np.matrix([[alpha1+alpha2+2*alpha3*np.cos(q[0]), alpha2+alpha3*np.cos(q[1])],
-                    [alpha2+alpha3*np.cos(q[1]), alpha2]])
-    Co = alpha3*np.array([-2*qdot[0]*qdot[1] - qdot[1]**2, qdot[0]**2])*np.sin(q[1])
-    Gr = np.array([beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]), beta2*np.cos(q[0]+q[1])])
+    #q: array_like, shape=(2,), dtype=float,
+    #angles state of the double pendulum,
+    #order=[angle1, angle2],
+    #units=[rad, rad,]
+
+    q1 = q[0]
+    q2 = q[1]
+    dq1 = qdot[0]
+    dq2 = qdot[1]
+
+    #qdot: array_like, shape=(2,), dtype=float,
+    #velocity state of the double pendulum,
+    #order=[velocity1, velocity2],
+    #units=[rad/s, rad/s]
+
+    M = np.matrix([[alpha1+alpha2+2*alpha3*np.cos(q2), alpha2+alpha3*np.cos(q2)], [alpha2+alpha3*np.cos(q2), alpha2]]) #mass_matrix
+    C = alpha3*np.array([-2*dq1*dq2 - dq2**2, dq1*2])*np.sin(q2) #coriolis_matrix
+    G = np.array([beta1*np.cos(q1) + beta2*np.cos(q1+q2), beta2*np.cos(q1+q2)]) #gravity_vector
 
     # robotModel.data.M = Ma
     # robotModel.data.C = Co
     # robotModel.data.g = Gr
 
     #M_det = np.linalg.det(M)
-    M_det = alpha1*alpha2 - (alpha3**2)*((np.cos(q[1]))**2)
+    delta = alpha1*alpha2 - (alpha3**2)*((np.cos(q2))**2)
 
 
-    # compute the desired energy (potential energy up-right position)
+    #Er is the energy of Acrobot at the upright equilibrium point
     desired_energy = beta1 + beta2
 
 
 # #########################   Compute Gains threshold to choose the gains kp, kd, kv   #########################
 
-    # Compute the threshold for kd gain
-    def max_f_kd(q2):
-        phi2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2))
-        return (phi2 + desired_energy)*(alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2))/(alpha1+alpha2+2*alpha3*np.cos(q2)) 
+    """Set controller gains.
+
+        Parameters
+        ----------
+        kp : float
+            gain for position error
+        kd : float
+            gain
+        kv : float
+            gain for velocity error
+
+    """
+    kp = 61.2    # Proportional gain
+    kd = 35.8    # Dynamics gain
+    kv = 1    # Derivative gain
+
+    q2_values = np.linspace(0, 2*(np.pi), 1000) #for q2 belongs [0, 2pi] 
+    phi_q2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2_values))
+
+    kp_threshold = (2/np.pi)*min(beta1**2, beta2**2)#(43) in paper
     
-    q2_values = np.linspace(0, 2*(np.pi), 1000)
-
-    thresh_kd_vec = max_f_kd(q2_values)
-    thresh_kd = max( thresh_kd_vec)
-    #print('-----thresh_kd: ', thresh_kd)
-
-    # Compute the threshold for the kp gain
-    thresh_kp = (2/np.pi)*min(beta1**2, beta2**2)
-    #print('-----thresh_kp: ', thresh_kp)
+    kd_threshold = max(((phi_q2 + desired_energy)*(alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2))/(alpha1+alpha2+2*alpha3*np.cos(q2_values))))#f(25) in paper
+    
+    if kp > kp_threshold:
+        print(f"Kp={kp} fulfills the convergence property kp > {kp_threshold}")
+    else:
+        print(f"Kp={kp} does NOT fulfill convergence property kp > {kp_threshold}")
 
 
-    #gains 1 condition
-    #kd > max( ((phi2 + desired_energy)*M_det)/(M[0,0]) )    #for q2 belongs [0, 2pi]     (25 formula in paper)
-    #kp > (2/np.pi)*min(beta1**2, beta2**2)          #(43 formula in paper)
-    #kv > 0
+    if kd > kd_threshold:
+        print(f"Kd={kd} fulfills the convergence property kd > {kd_threshold}")
+    else:
+        print(f"Kd={kd} does NOT fulfill the convergence property kd > {kd_threshold}")
 
+    if kv > 0:
+        print(f"Kv={kv} fulfills the convergence property kv > 0")
+    else:
+        print(f"Kv={kv} does NOT fulfill the convergence property kv > 0")
 
-    # Define controller GAINS
-    kp = 0.07    # Proportional gain    > 0.067684
-    kd = 0.0045   # Dynamics gain       > 0.004364518
-    kv = 0.7    # Derivative gain
-    # kp = 0.1    # Proportional gain    > 0.067684
-    # kd = 0.007   # Dynamics gain       > 0.004364518
-    # kv = 0.9    # Derivative gain
     gains = np.array([kp, kd, kv])
-
-    # Paper Gains
-    # kp = 0.61    # Proportional gain
-    # kd = 0.358   # Dynamics gain
-    # kv = 0.663   # Derivative gain
-    # kp = 61.2    # Proportional gain
-    # kd = 35.8    # Dynamics gain
-    # kv = 66.3    # Derivative gain
-    # gains = np.array([kp, kd, kv])
 
 
 # #########################   Compute Energies (already done Desired_Energy)   #########################
 
     # Compute the kinetic energy
     #kinetic_energy = pin.computeKineticEnergy(robotModel.model, robotModel.data, q, qdot)
-    Ma = np.squeeze(np.asarray(Ma))
-    kinetic_energy = 0.5 * np.dot(qdot, np.dot((qdot), Ma))
+    M = np.squeeze(np.asarray(M))
+    kinetic_energy = 0.5 * np.dot(qdot, np.dot((qdot), M))
     
 
     # Compute the potential energy
@@ -144,4 +157,4 @@ def compute_energy(robotModel, q, qdot):
     acrobot_energy = kinetic_energy + potential_energy
 
 
-    return acrobot_energy, desired_energy, Ma, Co, Gr, gains
+    return acrobot_energy, desired_energy, alphas, betas, M, C, G, gains

@@ -96,9 +96,14 @@ def simulate():
         #q, qdot = sim_utils.getState(robotID, jointIndices)    
 
         # compute the feedback torque command
-        torques, energy_error = swing_up_control(robotModel, q, qdot)
-        #if (switch(q, qdot) and i != 0):
-            #torques,state_error = stabilization_control(robotModel, q, qdot, qdes, qdotdes)
+        
+        if (not switch(q, qdot)):
+            print('***** no switch : ')
+            torques, energy_error = swing_up_control(robotModel, q, qdot, False)
+        else:
+            print('***** yes switch : ')
+            energy_error = 0
+            torques,state_error = stabilization_control(robotModel, q, qdot, qdes, qdotdes)
             
 
 
