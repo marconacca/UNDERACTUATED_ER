@@ -32,13 +32,13 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     # #########################   CONTROL LAW tau2   #########################
 
     # Compute control torques
-    #nom = - (kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1]))
+    #nom = - ((kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1])))
     #den = kd*M[0,0] + energy_error*M_det
     #tau2 = nom / den
-    #tau2 = -(kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1]))  / ( energy_error*M_det+kd*M[0,0] )
+    #tau2 = -((kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1])))  / ( energy_error*M_det+kd*M[0,0] )
 
     # Torque OLD PAPER 2002
-    nom = - (kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1]))
+    nom = - ((kv*qdot[1] + kp*q[1])*M_det + kd*(M[1,0]*(h1+G[0])-M[0,0]*(h2+G[1])))
     den =  ke*energy_error*M_det + kd*M[0,0]
     tau2 = nom / den
     

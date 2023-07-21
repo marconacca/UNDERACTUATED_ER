@@ -4,6 +4,7 @@ import sim_utils
 import pybullet as pb
 
 
+
 def acrobot_dynamics(q, qdot, control_input, dt):
     # Extract the state variables
     q1 = q[0]
@@ -87,12 +88,17 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     ddq2 = (M11*tau2 - G2*M11 + G1*M21 - H2*M11 + H1*M21)/(M11*M22 - M21*M21)
 
     # Update the state using some weird integration
-    b = control_input - C - G
-    x = np.linalg.solve(M, b)
+    # b = control_input - C - G
+    # x = np.linalg.solve(M, b)
     #print("Sto printando x: \n",np.int64(x))
 
-    next_dq1 = dq1 + np.int64(x[0]) * dt
-    next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
+    # next_dq1 = dq1 + np.int64(x[0]) * dt
+    # next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
+    # next_q1 = q1 + next_dq1 * dt
+    # next_q2 = q2 + next_dq2 * dt
+
+    next_dq1 = dq1 + ddq1 * dt
+    next_dq2 = dq2 + ddq2 * dt
     next_q1 = q1 + next_dq1 * dt
     next_q2 = q2 + next_dq2 * dt
 

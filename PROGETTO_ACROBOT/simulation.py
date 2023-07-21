@@ -4,7 +4,7 @@ import numpy as np
 import pinocchio as pin
 from controller_implementation import swing_up_control
 from dynamic_scipy import integration
-from plot_function import plotting_arrays, plotting_singleval
+from plot_function import plotting_conf, plotting_vel, plotting_torque, plotting_singleval
 import matplotlib.pyplot as plt
 from acro_dynamics import acrobot_dynamics
 
@@ -21,11 +21,13 @@ def simulate():
     nDof = 2
 
     # **********   SETTING INITIAL STATE   *********
-    q0 = np.array([-1.4, 0]) # initial configuration
-    qdot0 = np.array([0, 0]) # initial velocity
+    #q0 = np.array([-1.4, 0]) # initial configuration  (DOESN'T WORK)
+    q0 = np.array([-1.0, 0.0]) # initial configuration that works
+    qdot0 = np.array([0.0, 0.0]) # initial velocity
     state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])
     q = q0
     qdot = qdot0
+    
 
     # set a DESIRED JOINT CONFIGURATION and VELOCITY
     qdes = np.array([np.pi/2,0])
@@ -78,6 +80,13 @@ def simulate():
     # energy_des = des_potential_energy
 
 
+    # q[1] = q[1] - q[0]
+    # q[0] = q[0] - np.pi/2
+    # qdot[1] = qdot[1] - qdot[0]
+    
+    # this should be the same but change it all (wrong obviously)
+    # q = np.array([q[0]-np.pi/2, q[1] - q[0]])
+    # qdot = np.array([qdot[0], qdot[1] - qdot[0]])
 
     # ********************   SIMULATION CYCLE   ********************
 
@@ -105,13 +114,13 @@ def simulate():
 
     
         # **********   compute Dynamics and our Euler Integration   **********
-        qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
-        #qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
+        #qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
+        qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
         q = qnext
         qdot = qdotnext
         #q angle wrapping between 0 and 2pi  or  between -pi and pi
         #q = q % (2 * np.pi)
-        #q = np.arctan2(np.sin(q), np.cos(q))
+        q = np.arctan2(np.sin(q), np.cos(q))
         
         # q = np.array([q[0]-np.pi/2, q[1] - q[0]])
         # qdot = np.array([qdot[0], qdot[1] - qdot[0]])
@@ -122,7 +131,7 @@ def simulate():
 
 
         # STORE DATA for plotting
-        if(i % 240 == 0):
+        if(i % 1 == 0):
             q_history = np.append(q_history, [q], axis=0)
             qdot_history = np.append(qdot_history, [qdot], axis=0)
             torques_history = np.append(torques_history, [control_torques], axis=0)
@@ -147,9 +156,9 @@ def simulate():
     # plotting_arrays(sim_step, qdot_history, 'timestep', 'Vjoint [rad/s]', ['dq1', 'dq2'], 'Joint Velocity dq wrt time')
     # plotting_arrays(sim_step, torques_history, 'timestep', 'Torque [N*m]', ['Tau1', 'Tau2'], 'Torques Tau wrt time')
     # plotting_singleval(sim_step, energy_error_history, 'timestep', 'En.ERR [J]', ['En.ERR'], 'Energy error wrt time')
-    plotting_arrays(seconds, q_history, 'timestep', 'theta [rad]', ['q1', 'q2'], 'Configuration angle q wrt time')
-    plotting_arrays(seconds, qdot_history, 'timestep', 'Vjoint [rad/s]', ['dq1', 'dq2'], 'Joint Velocity dq wrt time')
-    plotting_arrays(seconds, torques_history, 'timestep', 'Torque [N*m]', ['Tau1', 'Tau2'], 'Torques Tau wrt time')
+    plotting_conf(seconds, q_history, 'timestep', 'theta [rad]', ['q1', 'q2'], 'Configuration angle q wrt time')
+    plotting_vel(seconds, qdot_history, 'timestep', 'Vjoint [rad/s]', ['dq1', 'dq2'], 'Joint Velocity dq wrt time')
+    plotting_torque(seconds, torques_history, 'timestep', 'Torque [N*m]', ['Tau1', 'Tau2'], 'Torques Tau wrt time')
     plotting_singleval(seconds, energy_error_history, 'timestep', 'En.ERR [J]', ['En.ERR'], 'Energy error wrt time')
 
 
