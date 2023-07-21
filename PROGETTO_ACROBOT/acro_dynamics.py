@@ -12,35 +12,34 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     dq2 = qdot[1]
     
     # Define the acrobot parameters
-    # l1 = 0.1425
-    # l2 = 0.2305
-    # lc1 = 0.035
-    # lc2 = 0.1
-    l1 = 0.102611
-    l2 = 0.220227
-    lc1 = 0.0370271
-    lc2 = 0.101004
-    m1 = 0.26703
-    m2 = 0.33238
-    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    I1 = 0.00040827  # x-axis inertia
-    I2 = 0.0011753
-    #I1 = 0.000036421 #z-axis inertia
-    #I2 = 0.000014553
-    g = 9.81
-    tau2 = control_input[1]
-
-    # l1 = 1
-    # l2 = 2
-    # lc1 = 0.5
-    # lc2 = 1
-    # m1 = 1
-    # m2 = 1
+    # # l1 = 0.1425
+    # # l2 = 0.2305
+    # # lc1 = 0.035
+    # # lc2 = 0.1
+    # l1 = 0.102611
+    # l2 = 0.220227
+    # lc1 = 0.0370271
+    # lc2 = 0.101004
+    # m1 = 0.26703
+    # m2 = 0.33238
     # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    # I1 = 0.083
-    # I2 = 0.33
+    # I1 = 0.00040827  # x-axis inertia
+    # I2 = 0.0011753
+    # #I1 = 0.000036421 #z-axis inertia
+    # #I2 = 0.000014553
     # g = 9.81
     # tau2 = control_input[1]
+
+    l1 = 1
+    l2 = 2
+    lc1 = 0.5
+    lc2 = 1
+    m1 = 1
+    m2 = 1
+    I1 = 0.083
+    I2 = 0.33
+    g = 9.81
+    tau2 = control_input[1]
 
     alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
     alpha2 = m2*(lc2**2) + I2

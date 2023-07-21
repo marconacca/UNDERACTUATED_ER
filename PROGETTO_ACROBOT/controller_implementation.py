@@ -3,11 +3,13 @@ import pinocchio as pin
 from energy_shaping import energy_shaping_controller
 from stabilization import stabilization_controller
 from energy_analysis import compute_energy
+from energy_analysis_2002OldPaper import compute_energy22
 
 # Implement the swing-up control algorithm using Pinocchio
 def swing_up_control(model, q, qdot, desired_position, desired_velocity):
     # Energy shaping control
-    total_energy, desired_energy, M, C, G, M_det, gains = compute_energy(model, q, qdot)
+    #total_energy, desired_energy, M, C, G, M_det, gains = compute_energy(model, q, qdot)
+    total_energy, desired_energy, M, C, G, M_det, gains = compute_energy22(model, q, qdot)  
     control_torques_energy_shaping, energy_error = energy_shaping_controller(model, total_energy, desired_energy, q, qdot, M, C, G, M_det, gains)
 
     # Stabilization control
