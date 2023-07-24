@@ -7,11 +7,17 @@ import wrap_utils as wrp
 def acrobot_dynamics(q, qdot, control_input, dt):
     # state components
 
-    q_wrapped = wrp.wrap_angles_diff(q)
-    q1 = q_wrapped[0] 
-    q2 = q_wrapped[1]
+    #q_wrapped = wrp.wrap_angles_diff(q)
+
+    # Extract the state variables
+    q1 = q[0]
+    q2 = q[1]
     dq1 = qdot[0]
     dq2 = qdot[1]
+    #q1 = q_wrapped[0] 
+    #q2 = q_wrapped[1]
+    #dq1 = qdot[0]
+    #dq2 = qdot[1]
     """
     q1 = (q_wrapped[0]  - np.pi/2) 
     q2 = (q_wrapped[1] - q_wrapped[0] )
@@ -32,7 +38,7 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     I2 = 0.33
     g = 9.81
     torques = control_input
-    #tau2 = control_input[1]
+    tau2 = control_input[1]
 
     alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
     alpha2 = m2*(lc2**2) + I2
@@ -53,33 +59,32 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     G = np.array([beta1*np.cos(q1) + beta2*np.cos(q1+q2), beta2*np.cos(q1+q2)]).T
     G1 = beta1*np.cos(q1) + beta2*np.cos(q1+q2)
     G2 = beta2*np.cos(q1+q2)
-    #E = 0.5*np.dot(np.dot(qdot.T, M),qdot) + beta1*np.sin(q1) + beta2*np.sin(q1+q2)
-    #delta = alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2)
-    #Er = (beta1+beta2)
+    E = 0.5*np.dot(np.dot(qdot.T, M),qdot) + beta1*np.sin(q1) + beta2*np.sin(q1+q2)
+    delta = alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2)
+    Er = (beta1+beta2)
 
     # Update the state with Integration
     b = torques - C - G
     x = np.linalg.solve(M, b)
     
-    """
     ddq1 =  - (M21*tau2 - G2*M21 + G1*M22 - H2*M21 + H1*M22)/(M11*M22 - M21*M21)
     ddq2 = (M11*tau2 - G2*M11 + G1*M21 - H2*M11 + H1*M21)/(M11*M22 - M21*M21)
-    """
+
 
     # Update the state variables using Euler's method
-    # next_dq1 = dq1 + ddq1 * dt
-    # next_dq2 = dq2 + ddq2 * dt
-    # next_q1 = q1 + next_dq1 * dt
-    # next_q2 = q2 + next_dq2 * dt
+    next_dq1 = dq1 + ddq1 * dt
+    next_dq2 = dq2 + ddq2 * dt
+    next_q1 = q1 + next_dq1 * dt
+    next_q2 = q2 + next_dq2 * dt
 
     # Return the updated state
     #next_state = np.array([next_q1, next_q2, next_dq1, next_dq2])
     #return next_state
 
-    next_dq1 = dq1 + np.int64(x[0]) * dt
-    next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
-    next_q1 = q1 + next_dq1 * dt
-    next_q2 = q2 + next_dq2 * dt
+    #next_dq1 = dq1 + np.int64(x[0]) * dt
+    #next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
+    #next_q1 = q1 + next_dq1 * dt
+    #next_q2 = q2 + next_dq2 * dt
 
     #next_q1 = q1 + dt*dq1
     #next_q2 = q2 + dt*dq2
@@ -158,3 +163,6 @@ def advance(q, qdot, control_input, dt):
         θ_prime[i] = θ_prime_tmp + (2 * np.pi if θ_prime_tmp <= 0 else (-2 * np.pi if θ_prime_tmp > 2 * np.pi else 0.0))
     
     return θ_prime, ω_prime
+
+
+

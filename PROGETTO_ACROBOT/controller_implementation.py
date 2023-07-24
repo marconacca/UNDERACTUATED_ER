@@ -74,8 +74,8 @@ def swing_up_control(model, q, qdot, model_pars):
     
 
     # Energy shaping control
-    energy, desired_energy, alphas, betas, M, C, G, gains = compute_energy(model, mass, length, com, gravity, inertia, q, qdot)
-    control_torques_energy_shaping, energy_error = energy_shaping_controller(model, energy, desired_energy, alphas, betas, q, qdot, M, C, G, gains)
+    energy, desired_energy, V_dot, alphas, betas, M, C, G, gains = compute_energy(model, mass, length, com, gravity, inertia, q, qdot)
+    control_torques_energy_shaping, energy_error = energy_shaping_controller(model, energy, desired_energy, V_dot, alphas, betas, q, qdot, M, C, G, gains)
 
     #energy = current total energy of the system
     #desired energy = total energy when the acrobot is at rest in vertical position (ideally only potential energy)

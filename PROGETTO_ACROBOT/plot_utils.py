@@ -14,7 +14,8 @@ def update_plot(plt, x, y, xAxisLabel, yAxisLabel, title, fileName):
     plt.clear()
 
     # Update the data
-    plt.plot( x, y, '-bo')
+    #plt.plot( x, y, '-bo')
+    plt.plot( x, y)
 
     # Set labels and title
     plt.set_xlabel(xAxisLabel)
@@ -40,8 +41,11 @@ def update_2line_plot(plt, x, y1, y2, xAxisLabel, yAxisLabel, label1, label2, ti
     plt.set_ylabel(yAxisLabel)
     plt.set_title(title)
 
-    plt.plot(x, y1, '-o', color='blue', label = label1)
-    plt.plot(x, y2, '-o', color='red', label = label2)
+    #plt.plot(x, y1, '-o', color='blue', label = label1)
+    #plt.plot(x, y2, '-o', color='red', label = label2)
+
+    plt.plot(x, y1, color='blue', label = label1)
+    plt.plot(x, y2, color='red', label = label2)
 
     legend = plt.get_legend()
     if not legend:

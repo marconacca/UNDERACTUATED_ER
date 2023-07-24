@@ -32,7 +32,8 @@ def simulationSetup(simDT):
 
     # load the robot model setting initial position and orientation of the base link
     startPos = [0,0,0.5]
-    startOrientation = pb.getQuaternionFromEuler([0,0,0])
+    #startOrientation = pb.getQuaternionFromEuler([0,0,0])
+    startOrientation = pb.getQuaternionFromEuler([-np.pi/2,0,0])
 
     # Define the length of the axis lines
     #axis_length = 1.0

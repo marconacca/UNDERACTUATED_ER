@@ -10,7 +10,7 @@ from integrator import *
 from controller_implementation import *
 from dynamic_scipy import integration
 from acro_dynamics import *
-
+from wrap_utils import *
 import sim_utils
 
 
@@ -57,10 +57,10 @@ def simulate():
     #plt.ion() # Initialize the figure
 
     # Create the plots
-    #fig1, tauPlot = plt.subplots()
-    #fig2, energyPlot = plt.subplots()
-    #fig3, qPlot = plt.subplots()
-    #fig4, qdotPlot = plt.subplots()
+    fig1, tauPlot = plt.subplots()
+    fig2, energyPlot = plt.subplots()
+    fig3, qPlot = plt.subplots()
+    fig4, qdotPlot = plt.subplots()
 
     # Plot the initial empty data
     #plot_utils.init_plot(tauPlot, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase')
@@ -87,14 +87,22 @@ def simulate():
     start_time = time.time()
     time_x_collection = []
 
+    s = 0
+
+    q[1] = q[1] - q[0]
+    q[0] = q[0] - np.pi/2
+    qdot[1] = qdot[1] - qdot[0]
+    
+
     input("press ENTER to START the simulation:")
 
     for i in range(int(simTime/simDT)):
 
         current_time = time.time()
         time_diff = current_time - start_time
-        x = time_diff
+        #x = time_diff
 
+        x = s
         # read the current joint state from the simulator
         #q, qdot = sim_utils.getState(robotID, jointIndices)    
 
@@ -104,7 +112,7 @@ def simulate():
             print('***** no switch : ')
             torques, energy_error = swing_up_control(robotModel, q, qdot, False)
         else:
-            print('***** yes switch : ')
+            print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$REGOLA OK$$$$$$$$$$$$$$$$$$$$2" yes switch : ')
             torques,state_error = stabilization_control(robotModel, q, qdot, qdes, qdotdes)
             
 
@@ -123,13 +131,27 @@ def simulate():
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = torques)
 
         # Dynamics and our Euler Integration  
-        #q_next,qdot_next = acrobot_dynamics(q, qdot, torques, simDT)
+        q_next,qdot_next = acrobot_dynamics(q, qdot, torques, simDT)
         #q_next,qdot_next = advance(q, qdot, torques, simDT)
-        q_next,qdot_next = euler_integrator([q[0], q[1], qdot[0], qdot[1]], desired_state, simDT, torques)
+        #q_next,qdot_next = euler_integrator([q[0], q[1], qdot[0], qdot[1]], desired_state, simDT, torques)
         #q_next,qdot_next = runge_integrator([q[0], q[1], qdot[0], qdot[1]], desired_state, simDT, torques)
+        
+        
+        
+        updated_state = np.concatenate((q_next, qdot_next))
+        # Check if both angles and angular velocities match the final state (within a small tolerance)
+        match = all(abs(updated - final) < 1e-6 for updated, final in zip(updated_state, desired_state))
+        if match:
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$REGOLA OK$$$$$$$$$$$$$$$$$$$$2")
+            break
         #store the new state
-        q = q_next
-        qdot = qdot_next
+        #q_next = [(q_next[0]-(np.pi/2)), q_next[1] - q_next[0]]
+        q = np.array(q_next)
+        q = wrap_angles_top(q)
+        #qdot_next =[qdot_next[0], qdot_next[1]- qdot_next[0]]
+        qdot = np.array(qdot_next)
+
+        s = s+1
 
         
 
@@ -141,15 +163,20 @@ def simulate():
         plot_utils.csv_write_multiple(x, qdot[0], qdot[1], filename4)
         
 
-        # Update the plot
-        #plot_utils.update_plot(tauPlot, time_x_collection, taus_collection, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
-        #plot_utils.update_plot(energyPlot, time_x_collection, energy_collection, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
-        #plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1-pi/2', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
-        #plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q1dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
-
         # advance the simulation one step
         pb.stepSimulation()
         time.sleep(simDT)
+
+    # Update the plot
+    plot_utils.update_plot(tauPlot, time_x_collection, taus_collection, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
+    plot_utils.update_plot(energyPlot, time_x_collection, energy_collection, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
+    plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1-pi/2', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
+    plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q1dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
+
+    fig1.show()
+    fig2.show()
+    fig3.show()
+    fig4.show()
 
     # Disable interactive mode after the loop
     #plt.ioff()

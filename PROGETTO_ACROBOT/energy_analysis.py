@@ -27,6 +27,8 @@ def compute_energy(robotModel, mass, length, com, gravity, inertia, q, qdot):
     g = gravity
     I1 = inertia[0]
     I2 = inertia[1]
+    #I1 = m1 * l1 ** 2 / 3
+    #I2 = m2 * l2 ** 2 / 3
 
 
     alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
@@ -85,7 +87,8 @@ def compute_energy(robotModel, mass, length, com, gravity, inertia, q, qdot):
     # robotModel.data.g = Gr
 
     #M_det = np.linalg.det(M)
-    delta = alpha1*alpha2 - (alpha3**2)*((np.cos(q2))**2)
+    #delta = alpha1*alpha2 - (alpha3**2)*((np.cos(q2))**2)
+    delta = ( alpha1+alpha2+2*alpha3*np.cos(q[1]) ) * ( alpha2 ) - ( alpha2+alpha3*np.cos(q[1]) )
 
 
     #Er is the energy of Acrobot at the upright equilibrium point
@@ -109,6 +112,12 @@ def compute_energy(robotModel, mass, length, com, gravity, inertia, q, qdot):
     kp = 61.2    # Proportional gain
     kd = 35.8    # Dynamics gain
     kv = 1    # Derivative gain
+
+    # Paper Gains
+    #kp = 22    # Proportional gain
+    #kd = 15    # Dynamics gain
+    #kv = 45   # Derivative gain
+    
 
     #q2_values = np.linspace(0, 2*(np.pi), 1000) #for q2 belongs [0, 2pi] 
     phi_q2 = np.sqrt(beta1**2+beta2**2+2*beta1*beta2*np.cos(q2))
@@ -158,4 +167,34 @@ def compute_energy(robotModel, mass, length, com, gravity, inertia, q, qdot):
     acrobot_energy = kinetic_energy + potential_energy
 
 
-    return acrobot_energy, desired_energy, alphas, betas, M, C, G, gains
+    # Calculate potential energy for each pendulum
+    V1 = m1 * g * l1 * (1 - np.cos(q1))
+    V2 = m2 * g * l2 * (1 - np.cos(q2))
+
+    # Calculate the moment of inertia for each pendulum
+    #I1 = m1 * l1 ** 2 / 3
+    #I2 = m2 * l2 ** 2 / 3
+
+    # Calculate the kinetic energy for each pendulum using the moment of inertia
+    T1 = 0.5 * I1 * dq1 ** 2
+    T2 = 0.5 * I2 * (dq1 ** 2 + dq2 ** 2 + 2 * l1 * l2 * dq1 * dq2 * np.cos(q1 - q2))
+
+    
+
+    # Calculate kinetic energy for each pendulum
+    T1 = 0.5 * m1 * (l1 * dq1) ** 2
+    T2 = 0.5 * m2 * ((l1 * dq1) ** 2 + (l2 * dq2) ** 2 + 2 * l1 * l2 * dq1 * dq2 * np.cos(q1 - q2))
+
+    # Calculate the total potential energy V
+    V = V1 + V2
+
+    # Calculate V_dot (the rate of change of potential energy)
+    V_dot = m1 * g * l1 * np.sin(q1) * dq1 + m2 * g * l2 * np.sin(q2) * dq2
+
+    # Calculate the total energy E
+    E = V1 + V2 + T1 + T2
+
+    #acrobot_energy = E
+
+
+    return acrobot_energy, desired_energy, V_dot, alphas, betas, M, C, G, gains
