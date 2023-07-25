@@ -21,11 +21,11 @@ def simulate():
     simDT = 1/240 # simulation timestep 
     simTime = 25 # total simulation time in seconds
 
-    q0 = np.array([-1.4, 0]) # initial configuration
+    q0 = np.array([0, 0]) # initial configuration [-1.4, 0]
     qdot0 = np.array([0, 0]) # initial velocity
     initial_state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])  # Initial state [q1, q2, dq1, dq2]
 
-    qdes = np.array([np.pi/2,0]) # desired configuration
+    qdes = np.array([-np.pi,0]) # desired configuration [np.pi/2,0]
     qdotdes = np.array([0,0]) # desired velocity
     desired_state = np.array([np.pi/2, 0, 0, 0])  # Desired state for stabilization [q1, q2, dq1, dq2]
 
@@ -40,7 +40,9 @@ def simulate():
     for i in jointIndices:
         pb.resetJointState(robotID, i, q0[i])
 
-    q, qdot = sim_utils.getState(robotID, jointIndices) 
+    #q, qdot = sim_utils.getState(robotID, jointIndices)
+    q = q0
+    qdot = qdot0 
 
     q1_collection = []
     q2_collection = []
@@ -88,10 +90,6 @@ def simulate():
     time_x_collection = []
 
     s = 0
-
-    q[1] = q[1] - q[0]
-    q[0] = q[0] - np.pi/2
-    qdot[1] = qdot[1] - qdot[0]
     
 
     input("press ENTER to START the simulation:")
@@ -101,31 +99,31 @@ def simulate():
         current_time = time.time()
         time_diff = current_time - start_time
         #x = time_diff
-
+        q = [q[0] - ((np.pi / 2) % np.pi), q[1]]
         x = s
         # read the current joint state from the simulator
         #q, qdot = sim_utils.getState(robotID, jointIndices)    
 
         # compute the feedback torque command
-        
+
+        #q = np.array([q[0] - ((np.pi / 2) % np.pi), q[1] - q[0]])
+        #qdot = np.array([qdot[0], qdot[1] - qdot[0]])
+    
+        """
         if (not switch(q, qdot)):
             print('***** no switch : ')
             torques, energy_error = swing_up_control(robotModel, q, qdot, False)
         else:
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$REGOLA OK$$$$$$$$$$$$$$$$$$$$2" yes switch : ')
             torques,state_error = stabilization_control(robotModel, q, qdot, qdes, qdotdes)
+        """
+        torques, energy_error = swing_up_control(robotModel, q, qdot, qdes, qdotdes)
             
 
 
         
 
-        time_x_collection.append(x)
-        taus_collection.append(torques[1])
-        energy_collection.append(energy_error)
-        q1_collection.append(q[0] - ((np.pi / 2) % np.pi))
-        q2_collection.append(q[1])
-        q1dot_collection.append(qdot[0])
-        q2dot_collection.append(qdot[1])
+        
 
         # send the torque command to the simulator
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = torques)
@@ -147,19 +145,28 @@ def simulate():
         #store the new state
         #q_next = [(q_next[0]-(np.pi/2)), q_next[1] - q_next[0]]
         q = np.array(q_next)
-        q = wrap_angles_top(q)
+        #q = wrap_angles_top(q)
+        q = np.arctan2(np.sin(q), np.cos(q))
         #qdot_next =[qdot_next[0], qdot_next[1]- qdot_next[0]]
         qdot = np.array(qdot_next)
 
-        s = s+1
-
-        
+        if(i % 1 == 0):
+            time_x_collection.append(x)
+            taus_collection.append(torques[1])
+            energy_collection.append(energy_error)
+            #q1_collection.append(q[0] - ((np.pi / 2) % np.pi))
+            q1_collection.append(q[0])
+            q2_collection.append(q[1])
+            q1dot_collection.append(qdot[0])
+            q2dot_collection.append(qdot[1])
+            s = s+1        
 
 
         # Update the csv
         plot_utils.csv_write(x, torques[1], filename1)
         plot_utils.csv_write(x, energy_error, filename2)
-        plot_utils.csv_write_multiple(x, (q[0] - ((np.pi / 2) % np.pi)), q[1], filename3)
+        #plot_utils.csv_write_multiple(x, (q[0] - ((np.pi / 2) % np.pi)), q[1], filename3)
+        plot_utils.csv_write_multiple(x, q[0], q[1], filename3)
         plot_utils.csv_write_multiple(x, qdot[0], qdot[1], filename4)
         
 
@@ -170,8 +177,8 @@ def simulate():
     # Update the plot
     plot_utils.update_plot(tauPlot, time_x_collection, taus_collection, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
     plot_utils.update_plot(energyPlot, time_x_collection, energy_collection, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
-    plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1-pi/2', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
-    plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q1dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
+    plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
+    plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q2dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
 
     fig1.show()
     fig2.show()

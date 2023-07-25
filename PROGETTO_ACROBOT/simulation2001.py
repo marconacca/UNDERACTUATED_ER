@@ -17,13 +17,13 @@ def simulate():
 
     # /////////////////////   SIMULATION SETTINGS   /////////////////////
     simDT = 1/240 # simulation timestep 
-    simTime = 25 # total simulation time in seconds
+    simTime = 30 # total simulation time in seconds
 
-    q0 = np.array([-np.pi, 0]) # initial configuration
+    q0 = np.array([0.0, 0.0]) # initial configuration
     qdot0 = np.array([0, 0]) # initial velocity
     initial_state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])  # Initial state [q1, q2, dq1, dq2]
 
-    qdes = np.array([0,0]) # desired configuration
+    qdes = np.array([np.pi/2,0.0]) # desired configuration
     qdotdes = np.array([0,0]) # desired velocity
     desired_state = np.array([np.pi/2, 0, 0, 0])  # Desired state for stabilization [q1, q2, dq1, dq2]
 
@@ -164,8 +164,8 @@ def simulate():
     # Update the plot
     plot_utils.update_plot(tauPlot, time_x_collection, taus_collection, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase', filename1)
     plot_utils.update_plot(energyPlot, time_x_collection, energy_collection, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase', filename2)
-    #plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1-pi/2', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
-    #plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q2dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
+    plot_utils.update_2line_plot(qPlot, time_x_collection, q1_collection, q2_collection,  'Time [s]', '[rad]', 'q1-pi/2', 'q2', 'Time responses of states of the Acrobot in the swing-up phase',filename3)
+    plot_utils.update_2line_plot(qdotPlot, time_x_collection, q1dot_collection, q2dot_collection,  'Time [s]', '[rad/s]', 'q1dot', 'q2dot', 'Time responses of states of the Acrobot in the swing-up phase',filename4)
 
     fig1.show()
     fig2.show()

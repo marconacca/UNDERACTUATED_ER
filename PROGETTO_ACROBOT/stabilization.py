@@ -20,7 +20,7 @@ def stabilization_controller(q, qdot, desired_position, desired_velocity):
     #K = np.array([-460.5540, -171.0658,  -69.2076,  -26.9682])
 
     # Compute control torques
-    tau2 = np.dot(-K, x)
+    tau2 = -(np.dot(K, x))
 
     control_torques = np.array([0, tau2])
 

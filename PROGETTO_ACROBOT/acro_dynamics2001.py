@@ -7,13 +7,10 @@ import wrap_utils as wrp
 
 def advance(state, t, k, Δt, ls, ms, lc, Is, g):
 
-    θ = np.full(2, 0)
-    ω = np.full(2, 0)
+    
 
-    θ[0] = state[0]
-    θ[1] = state[1]
-    ω[0] = state[2]
-    ω[1] = state[3]
+    θ = np.array(state[:2])
+    ω = np.array(state[2:])
 
     t1 = t[0]
     t2 = t[1]
@@ -27,10 +24,11 @@ def advance(state, t, k, Δt, ls, ms, lc, Is, g):
     kp = k[3]
 
     q̇ = np.array([ω[0], ω[1] - ω[0]])
-    q = np.array([θ[0] - ((np.pi / 2) % np.pi), θ[1] - θ[0]])
+    q = np.array([θ[0] - (np.pi / 2), θ[1] - θ[0]])
 
-    d11 = t1 + t2 + 2*t3*np.cos(q[1])
-    d12 = t2 + t3*np.cos(q[1])
+    cos = np.cos(q[1])
+    d11 = t1 + t2 + 2*t3*cos
+    d12 = t2 + t3*cos
     d22 = t2
     D = np.array([[d11, d12], [d12, d22]])
 
@@ -43,12 +41,12 @@ def advance(state, t, k, Δt, ls, ms, lc, Is, g):
     G = np.array([g1, g2])
 
     Δ = d11*d22 - d12*d12
-    E = 0.5*q̇.T*D*q̇ + t4*g*np.sin(q[0]) + t5*g*np.sin(q[0] + q[1]) # total energy
+    E = (0.5*np.dot(q̇,np.dot(D,q̇))) + (t4*g*np.sin(q[0]) + t5*g*np.sin(q[0] + q[1])) # total energy
     Etop = (t4 + t5)*g # Energy at unstable equillibrium, is the energy of Acrobot at the upright equilibrium point
     desired_energy = Etop
     Ẽ = E - Etop
     tau2 = (-(kv*q̇[1] + kp*q[1])*Δ - kd*(d12*(h1 + g1) - d11*(h2 + g2)))/(ke*Ẽ*Δ + kd*d11)
-    τ = np.array([0.0, tau2[0,0]])
+    τ = np.array([0.0, tau2])
 
     b = τ - C - G
 
@@ -66,22 +64,26 @@ def advance(state, t, k, Δt, ls, ms, lc, Is, g):
     qnext = θdot
     q̇next = ωdot
 
+    print('------------------------------------------------------',qnext[0])
+
     control_torques = τ
 
     # Total Energy of the Acrobot system
     #acrobot_energy = kinetic_energy_double_pendulum(state, ls, ms, lc, Is, g) + potential_energy_double_pendulum(state, ls, ms, lc, Is, g)
 
     # Compute the kinetic energy
-    kinetic_energy = 0.5 * np.dot(qdot.T, np.dot(qdot, M))
+    M = np.array([[t1+t2+2*t3*np.cos(q[1]), t2+t3*np.cos(q[1])],[t2+t3*np.cos(q[1]), t2]])
+    kinetic_energy = 0.5 * np.dot(q̇.T, np.dot(q̇, M))
     
 
     # Compute the potential energy
     potential_energy = t4*np.sin(q[0]) + t5*np.sin(q[0]+q[1])
 
-    acrobot_energy = kinetic_energy - potential_energy
+    acrobot_energy = kinetic_energy + potential_energy
 
     #Compute the error between desired energy and current energy
     energy_error = acrobot_energy - desired_energy
+    print('error ------------------------------------------------------',Ẽ )
 
     return qnext, q̇next, control_torques, energy_error
 
