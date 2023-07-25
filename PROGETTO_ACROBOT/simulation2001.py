@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import shutil
 import os
 from controller_implementation import *
-from acro_dynamics2001 import *
+from acro_dynamics2002 import *
 from wrap_utils import *
 import sim_utils
 
@@ -134,7 +134,7 @@ def simulate():
         q1_collection.append(q[0])
         q2_collection.append(q[1])
         q1dot_collection.append(qdot[0])
-        q1dot_collection.append(qdot[1])
+        q2dot_collection.append(qdot[1])
         
         
         
