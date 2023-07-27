@@ -29,9 +29,13 @@ def advance(state, t, k, Δt, ls, ms, lc, Is, g):
     q̇ = ω
     q = θ
 
-    cos = math.cos(q[1])
-    d11 = t1 + t2 + 2*t3*cos
-    d12 = t2 + t3*cos
+    q1 = q[0]
+    q2 = q[1]
+    q̇1 = q̇[0]
+    q̇2 = q̇[1]
+
+    d11 = t1 + t2 + 2*t3*np.cos(q2)
+    d12 = t2 + t3*np.cos(q2)
     d22 = t2
     D = np.array([[d11, d12], [d12, d22]])
 
@@ -48,24 +52,41 @@ def advance(state, t, k, Δt, ls, ms, lc, Is, g):
     Etop = (t4 + t5)*g # Energy at unstable equillibrium, is the energy of Acrobot at the upright equilibrium point
     desired_energy = Etop
     Ẽ = E - Etop
-    tau2 = (-(kv*q̇[1] + kp*q[1])*Δ - kd*(d12*(h1 + g1) - d11*(h2 + g2)))/(ke*Ẽ*Δ + kd*d11)
+    tau2 = (-(kv*q̇2 + kp*q2)*Δ - kd*(d12*(h1 + g1) - d11*(h2 + g2)))/(ke*Ẽ*Δ + kd*d11)
     τ = np.array([0.0, tau2])
 
     b = τ - C - G
 
     x = np.linalg.solve(D, b)
-
+    """
     ωdot = np.array([ω[0], ω[1]])
     θdot = np.array([θ[0], θ[1]])
 
     ωdot[0] += Δt*x[0]
-    ωdot[1] += Δt*(x[1] + x[0])
+    #ωdot[1] += Δt*(x[1] + x[0])
+    ωdot[1] += Δt*(x[1])
     θdot[0] += Δt*ωdot[0]
     θdot[1] += Δt*ωdot[1]
 
 
     qnext = θdot
     q̇next = ωdot
+    """
+    
+
+    ddq1 =  - (d12*tau2 - g2*d12 + g1*d22 - h2*d12 + h1*d22)/(d11*d22 - d12**2)
+    ddq2 = (d11*tau2 - g2*d11 + g1*d12 - h2*d11 + h1*d12)/(d11*d22 - d12**2)
+
+    next_dq1 = q̇1 + ddq1 * Δt
+    next_dq2 = q̇2 + ddq2 * Δt
+    next_q1 = q1 + next_dq1 * Δt
+    next_q2 = q2 + next_dq2 * Δt
+
+
+    #qnext = θdot
+    qnext = np.array([next_q1,next_q2])
+    #q̇next = ωdot
+    q̇next = np.array([next_dq1,next_dq2])
 
     print('------------------------------------------------------',qnext[0])
 
@@ -85,10 +106,16 @@ def advance(state, t, k, Δt, ls, ms, lc, Is, g):
     acrobot_energy = kinetic_energy + potential_energy
 
     #Compute the error between desired energy and current energy
-    energy_error = acrobot_energy - desired_energy
+    #energy_error = acrobot_energy - desired_energy
+    energy_error = Ẽ
+
     print('error ------------------------------------------------------',Ẽ )
 
     return qnext, q̇next, control_torques, energy_error
+
+
+
+
 
 def potential_energy(state, ls, ms, lc, Is, g):
     cms = lc

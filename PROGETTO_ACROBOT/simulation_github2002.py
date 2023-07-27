@@ -6,8 +6,7 @@ import plot_utils
 import matplotlib.pyplot as plt
 import shutil
 import os
-from controller_implementation import *
-from acro_dynamics2002 import *
+from github_papar2002 import *
 from wrap_utils import *
 import sim_utils
 
@@ -17,13 +16,13 @@ def simulate():
 
     # /////////////////////   SIMULATION SETTINGS   /////////////////////
     simDT = 1/240  #simulation timestep 
-    simTime = 30 #total simulation time in seconds
+    simTime = 20 #total simulation time in seconds
 
     q0 = np.array([0.0, 0.0]) # initial configuration
     qdot0 = np.array([0, 0]) # initial velocity
     initial_state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])  # Initial state [q1, q2, dq1, dq2]
 
-    qdes = np.array([((np.pi/2) % (2*np.pi)),0.0]) # desired configuration
+    qdes = np.array([np.pi/2,0.0]) # desired configuration
     qdotdes = np.array([0,0]) # desired velocity
     desired_state = np.array([np.pi/2, 0, 0, 0])  # Desired state for stabilization [q1, q2, dq1, dq2]
 
@@ -47,26 +46,15 @@ def simulate():
     taus_collection = []
     energy_collection = []
 
-    energy_error = 0
-
 
     # /////////////////////   PLOTS SETTINGS  /////////////////////
-    
-    #plt.ion() # Initialize the figure
-
     # Create the plots
     fig1, tauPlot = plt.subplots()
     fig2, energyPlot = plt.subplots()
     fig3, qPlot = plt.subplots()
     fig4, qdotPlot = plt.subplots()
 
-    # Plot the initial empty data
-    #plot_utils.init_plot(tauPlot, 'Time [s]', '\u03C4' + '2 [Nm]', 'Time responses of ' + '\u03C4'+ '2 of the Acrobot in the swing-up phase')
-    #plot_utils.init_plot(energyPlot, 'Time [s]', 'E−Er [J]', 'Time responses of E of the Acrobot in the swing-up phase')
-    #plot_utils.init_plot(qPlot, 'Time [s]', '[rad]', 'Time responses of states of the Acrobot in the swing-up phase')
-    #plot_utils.init_plot(qdotPlot, 'Time [s]', '[rad/s]', 'Time responses of states of the Acrobot in the swing-up phase')
-
-    # /////////////////////   FILE.csv SETTINGS  /////////////////////
+    # /////////////////////   FILE SETTINGS  /////////////////////
     # Create a directory for the files
     folder_path ='plots'
     if os.path.exists(folder_path):
@@ -82,14 +70,10 @@ def simulate():
     filename4 = os.path.join(folder_path, f'qdot')
 
     # Initialize start time
-    start_time = time.time()
     time_x_collection = []
     s = 0
 
-    #q[1] = q[1] - q[0]
-    #q[0] = q[0] - np.pi/2
-    #qdot[1] = qdot[1] - qdot[0]
-
+    
     g = 9.81
 
     ls = np.array([1.0,2.0])
@@ -102,42 +86,16 @@ def simulate():
     t3 = ms[1]*ls[0]*lc[1]
     t4 = ms[0]*lc[0] + ms[1]*ls[0]
     t5 = ms[1]*lc[1]
-    
-    a = np.array([[t1 + t2 + 2*t3, t2 + t3],
-              [t2 + t3, t2]])
-    ainv = np.linalg.inv(a)
-    a11 = ainv[0, 0]
-    a12 = ainv[0, 1]
-    a21 = ainv[1, 0]
-    a22 = ainv[1, 1]
-    k1 = t4*g
-    k2 = t5*g
-    A = np.array([
-    [0, 0, 1, 0],
-    [0, 0, 0, 1],
-    [a11*(k1+k2) + a12*k2, (a11+a12)*k2, 0, 0],
-    [a12*(k1+k2) + a22*k2, (a12+a22)*k2, 0, 0],
-    ])
 
-    b = np.array([0, 0, a12, a22])
+    ts = np.array([t1, t2, t3, t4,t5]) #note in this case betas are without g
 
-    ts = np.array([t1, t2, t3, t4,t5]) #note in this case beta are without g
-
-    kv = 45.0
-    ke = 0.5
-    kd = 15.0
-    kp = 22.0
-
-    ks = np.array([kv, ke, kd, kp])
-    
 
     input("press ENTER to START the simulation:")
 
     for i in range(int(simTime/simDT)):
         x = s 
         state = np.concatenate((q, qdot))
-        q_next, qdot_next, torques, energy_error = advance(state, ts, ks, simDT, ls, ms, lc, Is, g, A, b)
-        #q_next, qdot_next, torques, energy_error = advance(state, ts, ks, simDT, ls, ms, lc, Is, g)
+        q_next, qdot_next, torques, energy_error = energy_swingup_demo(state, ts, g, simDT)
 
         # send the torque command to the simulator
         pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces = torques)
@@ -162,22 +120,19 @@ def simulate():
         #store the new state
         q = np.array(q_next)
         #q = np.arctan2(np.sin(q), np.cos(q))
-        #q = normalize_angles_2002(q)
+        q = normalize_angles_2002(q)
         #q = wrap_angles_top(q)
         qdot = np.array(qdot_next)
 
         s = s+1
 
-        
-
-
+    
         # Update the csv
         plot_utils.csv_write(x, torques[1], filename1)
         plot_utils.csv_write(x, energy_error, filename2)
         plot_utils.csv_write_multiple(x, q[0], q[1], filename3)
         plot_utils.csv_write_multiple(x, qdot[0], qdot[1], filename4)
         
-
         # advance the simulation one step
         pb.stepSimulation()
         time.sleep(simDT)
@@ -192,9 +147,6 @@ def simulate():
     fig2.show()
     fig3.show()
     fig4.show()
-
-    # Disable interactive mode after the loop
-    #plt.ioff()
 
     input("press ENTER to CLOSE the simulation:")
 
