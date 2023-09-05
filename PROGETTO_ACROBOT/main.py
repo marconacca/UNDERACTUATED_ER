@@ -1,5 +1,5 @@
 # Main
 
-import simulation2001
+import simulation
 
-simulation2001.simulate()
+simulation.simulate()

@@ -6,7 +6,6 @@ import plot_utils
 import matplotlib.pyplot as plt
 import shutil
 import os
-from controller_implementation import *
 from acro_dynamics2002 import *
 from wrap_utils import *
 import sim_utils
@@ -23,7 +22,8 @@ def simulate():
     qdot0 = np.array([0, 0]) # initial velocity
     initial_state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])  # Initial state [q1, q2, dq1, dq2]
 
-    qdes = np.array([((np.pi/2) % (2*np.pi)),0.0]) # desired configuration
+    #qdes = np.array([((np.pi/2) % (2*np.pi)),0.0]) # desired configuration
+    qdes = np.array([np.pi/2,0.0]) # desired configuration
     qdotdes = np.array([0,0]) # desired velocity
     desired_state = np.array([np.pi/2, 0, 0, 0])  # Desired state for stabilization [q1, q2, dq1, dq2]
 
@@ -162,7 +162,7 @@ def simulate():
         #store the new state
         q = np.array(q_next)
         #q = np.arctan2(np.sin(q), np.cos(q))
-        #q = normalize_angles_2002(q)
+        q = normalize_angles_2002(q)
         #q = wrap_angles_top(q)
         qdot = np.array(qdot_next)
 

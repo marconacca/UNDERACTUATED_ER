@@ -27,7 +27,7 @@ def advance(state, θ, k, Δt, ls, ms, lc, Is, g, A, B):
 
     q̇ = np.array([q̇[0], q̇[1] - q̇[0]])
     q = np.array([q[0] - (np.pi / 2), q[1] - q[0]])
-    q = normalize_angles_2002(q)
+    #q = normalize_angles_2002(q)
     #q = np.array([q[0] - (np.pi / 2), q[1]])
     
 
@@ -64,27 +64,11 @@ def advance(state, θ, k, Δt, ls, ms, lc, Is, g, A, B):
 
     x = np.linalg.solve(D, b)
 
-    """
+    #ωdot = np.array([state[2], state[3]])
+    #θdot = np.array([state[0], state[1]])
 
-    ddq1 =  - (d12*tau2 - g2*d12 + g1*d22 - h2*d12 + h1*d22)/(d11*d22 - d12**2)
-    ddq2 = (d11*tau2 - g2*d11 + g1*d12 - h2*d11 + h1*d12)/(d11*d22 - d12**2)
-
-    next_dq1 = q̇1 + ddq1 * Δt
-    next_dq2 = q̇2 + ddq2 * Δt
-    next_q1 = q1 + next_dq1 * Δt
-    next_q2 = q2 + next_dq2 * Δt
-
-    qnext = np.array([next_q1,next_q2])
-    qnext = normalize_angles_2002(qnext)
-    q̇next = np.array([next_dq1,next_dq2])
-
-    """
-
-    ωdot = np.array([state[2], state[3]])
-    θdot = np.array([state[0], state[1]])
-
-    #ωdot = np.array([q̇1, q̇2])
-    #θdot = np.array([q1, q2])
+    ωdot = np.array([q̇1, q̇2])
+    θdot = np.array([q1, q2])
 
     ωdot[0] += Δt*x[0]
     ωdot[1] += Δt*(x[1]+ x[0])
@@ -92,7 +76,7 @@ def advance(state, θ, k, Δt, ls, ms, lc, Is, g, A, B):
     θdot[1] += Δt*ωdot[1]
 
     qnext = θdot
-    qnext = normalize_angles_2002(qnext)
+    #qnext = normalize_angles_2002(qnext)
     q̇next = ωdot
     
 
