@@ -1,3 +1,5 @@
+import os
+import shutil
 import pybullet as pb
 import time
 import numpy as np
@@ -21,8 +23,8 @@ def simulate():
     nDof = 2
 
     # **********   SETTING INITIAL STATE   *********
-    #q0 = np.array([-1.4, 0]) # initial configuration  (DOESN'T WORK)
-    q0 = np.array([-1.0, 0.0]) # initial configuration that works
+    q0 = np.array([-1.4, 0]) # initial configuration  (DOESN'T WORK)
+    # q0 = np.array([-1.0, 0.0]) # initial configuration that works
     qdot0 = np.array([0.0, 0.0]) # initial velocity
     state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])
     q = q0
@@ -52,33 +54,6 @@ def simulate():
     for i in jointIndices:
         pb.resetJointState(robotID, i, q0[i])
 
-    #q, qdot = sim_utils.getState(robotID, jointIndices)
-
-
-    # # Get the transform of the World frame relative to itself
-    # world_placement = robotModel.model.jointPlacements[0]
-    # # Extract the position and orientation from the transform
-    # world_position = world_placement.translation
-    # world_orientation = world_placement.rotation
-    # # Print the values of the World frame
-    # print("World Frame:")
-    # print("Position:", world_position)
-    # print("Orientation:", world_orientation)
-
-
-    # Compute the desired potential energy in vertical position
-
-    # #Set joint positions and velocities
-    # pin.forwardKinematics(robotModel.model, robotModel.data, qdes)
-    # gravity = robotModel.model.gravity.linear[2]  # Assuming gravity is in the z-direction
-    # des_potential_energy = 0.0
-    # for i in range(robotModel.model.njoints):
-    #     com_pos = robotModel.data.oMi[i].translation
-    #     mass = robotModel.model.inertias[i].mass
-    #     des_potential_energy += mass * gravity * com_pos[2]
-
-    # energy_des = des_potential_energy
-
 
     # q[1] = q[1] - q[0]
     # q[0] = q[0] - np.pi/2
@@ -89,6 +64,12 @@ def simulate():
     # qdot = np.array([qdot[0], qdot[1] - qdot[0]])
 
     # ********************   SIMULATION CYCLE   ********************
+    folder_path = 'plots'
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+        os.makedirs(folder_path, exist_ok=True)
+    else:
+        os.makedirs(folder_path, exist_ok=True)
 
     input("press ENTER to START the simulation:")
 
@@ -118,8 +99,10 @@ def simulate():
         qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
         q = qnext
         qdot = qdotnext
+        # q[0] = q[0] - np.pi/2
         #q angle wrapping between 0 and 2pi  or  between -pi and pi
-        #q = q % (2 * np.pi)
+        # q = q % (2 * np.pi)
+        
         q = np.arctan2(np.sin(q), np.cos(q))
         
         # q = np.array([q[0]-np.pi/2, q[1] - q[0]])
