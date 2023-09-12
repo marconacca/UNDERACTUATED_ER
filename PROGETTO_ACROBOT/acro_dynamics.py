@@ -4,21 +4,32 @@ import sim_utils
 import pybullet as pb
 
 
-def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
+
+def acrobot_dynamics(q, qdot, control_input, dt):
     # Extract the state variables
-    q = np.array([q1,q2])
-    qdot = np.array([dq1,dq2])
+    q1 = q[0]
+    q2 = q[1]
+    dq1 = qdot[0]
+    dq2 = qdot[1]
     
     # Define the acrobot parameters
-    # l1 = 0.1425
-    # l2 = 0.2305
-    # lc1 = 0.035
-    # lc2 = 0.1 + l1
+    # # l1 = 0.1425
+    # # l2 = 0.2305
+    # # lc1 = 0.035
+    # # lc2 = 0.1
+    # l1 = 0.102611
+    # l2 = 0.220227
+    # lc1 = 0.0370271
+    # lc2 = 0.101004
     # m1 = 0.26703
     # m2 = 0.33238
     # # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
-    # I1 = 0.000036421
-    # I2 = 0.000014553
+    # I1 = 0.00040827  # x-axis inertia
+    # I2 = 0.0011753
+    # #I1 = 0.000036421 #z-axis inertia
+    # #I2 = 0.000014553
+    # g = 9.81
+    # tau2 = control_input[1]
 
     l1 = 1
     l2 = 2
@@ -26,11 +37,10 @@ def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
     lc2 = 1
     m1 = 1
     m2 = 1
-    # inertia for each links (other values are smaller than 10^-8, I keep until 10^-5)
     I1 = 0.083
     I2 = 0.33
     g = 9.81
-    tau = control_input
+    tau2 = control_input[1]
 
     alpha1 = m1*(lc1**2) + m2*(l1**2) + I1
     alpha2 = m2*(lc2**2) + I2
@@ -53,7 +63,7 @@ def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
     G2 = beta2*np.cos(q1+q2)
     qdot = np.array([dq1,dq2])
     E = 0.5*np.dot(np.dot(qdot.T, M),qdot) + beta1*np.sin(q1) + beta2*np.sin(q1+q2)
-    delta = alpha1*alpha2 - (alpha3**2)*np.cos(q2)**2
+    delta = alpha1*alpha2 - (alpha3**2)*(np.cos(q2)**2)
     #E = 0.5*np.dot(qdot.T,np.dot(M,qdot)) + beta1*(np.cos(q[0]) - 1) + beta2*(np.cos(q[1]) - 1)
     # Er = -2*(beta1+beta2)
     Er = (beta1+beta2)
@@ -71,18 +81,39 @@ def acrobot_dynamics(q1,q2,dq1,dq2, control_input, dt):
     # phi2 = m2*lc2*g*np.cos(q[0]+ q[1])
 
     # Compute the joint accelerations using the equations of motion
-    # ddq2 = (d11*(tau - c2 -phi2) + d12*(c1+phi1))/(d11*d22 - d12**2)
+    # ddq2 = (d11*(tau2 - c2 -phi2) + d12*(c1+phi1))/(d11*d22 - d12**2)
     # ddq1 = (d12*ddq2 + c1 + phi1)/(-d11)
 
-    ddq1 =  - (M21*tau - G2*M21 + G1*M22 - H2*M21 + H1*M22)/(M11*M22 - M21*M21)
-    ddq2 = (M11*tau - G2*M11 + G1*M21 - H2*M11 + H1*M21)/(M11*M22 - M21*M21)
-    
-    # Update the state variables using Euler's method
-    next_q1 = q1 + dq1 * dt
-    next_q2 = q2 + dq2 * dt
+    ddq1 =  - (M21*tau2 - G2*M21 + G1*M22 - H2*M21 + H1*M22)/(M11*M22 - M21*M21)
+    ddq2 = (M11*tau2 - G2*M11 + G1*M21 - H2*M11 + H1*M21)/(M11*M22 - M21*M21)
+
+    # Update the state using some weird integration
+    # b = control_input - C - G
+    # x = np.linalg.solve(M, b)
+    #print("Sto printando x: \n",np.int64(x))
+
+    # next_dq1 = dq1 + np.int64(x[0]) * dt
+    # next_dq2 = dq2 + np.int64((x[0] + x[1])) * dt
+    # next_q1 = q1 + next_dq1 * dt
+    # next_q2 = q2 + next_dq2 * dt
+
     next_dq1 = dq1 + ddq1 * dt
     next_dq2 = dq2 + ddq2 * dt
+    next_q1 = q1 + next_dq1 * dt
+    next_q2 = q2 + next_dq2 * dt
+
+    nextq = np.array([next_q1, next_q2])
+    nextqdot = np.array([next_dq1, next_dq2])
+
+    
+    # Update the state variables using Euler's method
+    # next_dq1 = dq1 + ddq1 * dt
+    # next_dq2 = dq2 + ddq2 * dt
+    # next_q1 = q1 + next_dq1 * dt
+    # next_q2 = q2 + next_dq2 * dt
 
     # Return the updated state
-    next_state = np.array([next_q1, next_q2, next_dq1, next_dq2])
-    return next_state
+    #next_state = np.array([next_q1, next_q2, next_dq1, next_dq2])
+    #return next_state
+    
+    return nextq, nextqdot
