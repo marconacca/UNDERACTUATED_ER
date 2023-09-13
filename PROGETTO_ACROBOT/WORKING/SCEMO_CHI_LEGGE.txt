@@ -1,0 +1,13 @@
+Per fare il run vi servono questi pacchetti: 
+[
+        "numpy", //lo avete
+        "matplotlib", //lo avete
+        "pandas", //lo avete
+        "scipy", //probabilmente lo avete
+        "sympy",
+        "filterpy",
+        "opencv-python", // questo dovreste avercelo di base
+
+]
+
+Il file .py da usare è "energy_Xin.py" che trovate nelllo stesso folder di questo txt.
