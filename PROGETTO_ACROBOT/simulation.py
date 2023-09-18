@@ -12,28 +12,41 @@ from acro_dynamics import acrobot_dynamics
 
 import sim_utils
 
+#for the graphical part
+import sys
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle
+
+
 
 def simulate():
 
     simDT = 1/240 # simulation timestep   (was 1/240)
-    simTime = 20 # total simulation time in seconds (was 25)
-    num_step = simTime / simDT
+    simTime = 25 # total simulation time in seconds (was 25)
+    num_step = int(simTime / simDT)
 
-    robotID, robotModel = sim_utils.simulationSetup(simDT)
-    nDof = 2
+    #robotID, robotModel = sim_utils.simulationSetup(simDT)
+    #nDof = 2
 
     # **********   SETTING INITIAL STATE   *********
-    q0 = np.array([-1.4, 0]) # initial configuration  (DOESN'T WORK)
-    # q0 = np.array([-1.0, 0.0]) # initial configuration that works
+    q0 = np.array([-1.4, 0.0]) # initial configuration paper 2007
+    #q0 = np.array([np.pi/2.-1.4, 0.0]) # initial configuration another paper
     qdot0 = np.array([0.0, 0.0]) # initial velocity
-    state = np.array([q0[0], q0[1], qdot0[0], qdot0[1]])
+    
+    initial_state = np.concatenate((q0, qdot0), axis=None)
+    
     q = q0
     qdot = qdot0
     
 
     # set a DESIRED JOINT CONFIGURATION and VELOCITY
-    qdes = np.array([np.pi/2,0])
-    qdotdes = np.array([0,0])
+    qdes = np.array([np.pi/2,0.])
+    #qdes = np.array([np.pi,0.])
+    qdotdes = np.array([0.,0.])
+    
+    desired_state = np.concatenate((qdes, qdotdes), axis=None)
+    
 
     # Initialize arrays to stores important values and for plotting purposes
     q_history = np.array([q0])
@@ -51,17 +64,14 @@ def simulate():
     jointIndices = np.array([0,1])
     #print('jointIndices :', jointIndices)
 
-    for i in jointIndices:
-        pb.resetJointState(robotID, i, q0[i])
+    #for i in jointIndices:
+        #pb.resetJointState(robotID, i, q0[i])
 
 
+    # found in code of our paper but it's equal to modify the initial conition
     # q[1] = q[1] - q[0]
     # q[0] = q[0] - np.pi/2
     # qdot[1] = qdot[1] - qdot[0]
-    
-    # this should be the same but change it all (wrong obviously)
-    # q = np.array([q[0]-np.pi/2, q[1] - q[0]])
-    # qdot = np.array([qdot[0], qdot[1] - qdot[0]])
 
     # ********************   SIMULATION CYCLE   ********************
     folder_path = 'plots'
@@ -80,15 +90,7 @@ def simulate():
         #q, qdot = sim_utils.getState(robotID, jointIndices)
 
 
-        # # angle wrapping between 0 and 2pi
-        #q = q % (2 * np.pi)
-        #q = np.arctan2(np.sin(q), np.cos(q)) 
-        #Define the maximum allowed velocity
-        #max_velocity = 5.0
-        #Clamp joint velocities to the range [-max_velocity, max_velocity]
-        #joint_velocities_clamped = np.clip(qdot, -max_velocity, max_velocity)
-
-        control_torques, energy_error = swing_up_control(robotModel, q, qdot, qdes, qdotdes)
+        control_torques, energy_error = swing_up_control(q, qdot, initial_state, desired_state)
         print('\n***** control_torques: ', control_torques)
         print('\n')
 
@@ -99,14 +101,24 @@ def simulate():
         qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
         q = qnext
         qdot = qdotnext
-        # q[0] = q[0] - np.pi/2
-        #q angle wrapping between 0 and 2pi  or  between -pi and pi
-        # q = q % (2 * np.pi)
         
+        
+        # **********   Angle wrapping   **********
+        #  q angle wrapping between 0 and 2pi
+        #q = q % (2 * np.pi)
+        
+        #  angle wrapping between -pi and pi
         q = np.arctan2(np.sin(q), np.cos(q))
         
-        # q = np.array([q[0]-np.pi/2, q[1] - q[0]])
-        # qdot = np.array([qdot[0], qdot[1] - qdot[0]])
+        #  another angle wrapping of similar paper
+        #q[0] = q[0] % (2*np.pi)
+        #q[1] = (q[1] + np.pi) % (2*np.pi) - np.pi
+        
+        
+        # ----- Define the maximum allowed velocity
+        #max_velocity = 5.0
+        #Clamp joint velocities to the range [-max_velocity, max_velocity]
+        #joint_velocities_clamped = np.clip(qdot, -max_velocity, max_velocity)
         
         
         print('***** states : ', q, qdot)
@@ -128,13 +140,14 @@ def simulate():
         #    input('Check values of control')
 
 
-        pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)
+        #pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)
         # advance the simulation one step
-        pb.stepSimulation()
-        time.sleep(simDT)
+        #pb.stepSimulation()
+        #time.sleep(simDT)
 
 
-    # @@@@@@@@@@@@@@@   PLOTS TESTING   @@@@@@@@@@@@@@@
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@    PLOTS TESTING    @@@@@@@@@@@@@@@@@@@@@@@@@
     # plotting_arrays(sim_step, q_history, 'timestep', 'theta [rad]', ['q1', 'q2'], 'Configuration angle q wrt time')
     # plotting_arrays(sim_step, qdot_history, 'timestep', 'Vjoint [rad/s]', ['dq1', 'dq2'], 'Joint Velocity dq wrt time')
     # plotting_arrays(sim_step, torques_history, 'timestep', 'Torque [N*m]', ['Tau1', 'Tau2'], 'Torques Tau wrt time')
@@ -146,10 +159,58 @@ def simulate():
 
 
 
-    input("press ENTER to CLOSE the simulation:")
+    #input("press ENTER to CLOSE the simulation:")
 
-    pb.disconnect()
+    #pb.disconnect()
 
-    return sim_step, q_history, qdot_history
+    return num_step, q_history, qdot_history
 
 
+
+
+def make_plot(i, ax, x1, x2, y1, y2, L1, L2, simDT, di):
+    # Plot and save an image of the double pendulum configuration for time
+    # point i.
+    # The pendulum rods.
+    
+
+    # Plotted bob circle radius
+    r = 0.05
+    # Plot a trail of the m2 bob's position for the last trail_secs seconds.
+    trail_secs = 1
+    # This corresponds to max_trail time points.
+    max_trail = int(trail_secs / simDT)
+    
+
+    ax.plot([0, x1[i], x2[i]], [0, y1[i], y2[i]], lw=2, c='k')
+    # Circles representing the anchor point of rod 1, and bobs 1 and 2.
+    c0 = Circle((0, 0), r/2, fc='k', zorder=10)
+    c1 = Circle((x1[i], y1[i]), r, fc='b', ec='b', zorder=10)
+    c2 = Circle((x2[i], y2[i]), r, fc='r', ec='r', zorder=10)
+
+    ax.add_patch(c0)
+    ax.add_patch(c1)
+    ax.add_patch(c2)
+
+    # The trail will be divided into ns segments and plotted as a fading line.
+    ns = 20
+    s = max_trail // ns
+
+    for j in range(ns):
+        imin = i - (ns-j)*s
+        if imin < 0:
+            continue
+        imax = imin + s + 1
+        # The fading looks better if we square the fractional length along the
+        # trail.
+        alpha = (j/ns)**2
+        ax.plot(x2[imin:imax], y2[imin:imax], c='r', solid_capstyle='butt',
+                lw=2, alpha=alpha)
+
+    # Centre the image on the fixed anchor point, and ensure the axes are equal
+    ax.set_xlim(-L1-L2-r, L1+L2+r)
+    ax.set_ylim(-L1-L2-r, L1+L2+r)
+    ax.set_aspect('equal', adjustable='box')
+    plt.axis('off')
+    plt.savefig('frames/_img{:04d}.png'.format(i//di), dpi=72)
+    plt.cla()

@@ -1,8 +1,10 @@
 import pinocchio as pin
 import numpy as np
 
+
 # Compute the potential and kinetic energy of the Acrobot system
-def compute_energy(robotModel, q, qdot):
+def compute_energy( q, qdot):
+    
     # data = model.createData()
 
     # # # Set joint positions and velocities
@@ -15,7 +17,7 @@ def compute_energy(robotModel, q, qdot):
     # pin.updateFramePlacements(robotModel.model, robotModel.data)
 
 
-# #########################   Arm Parameters   #########################
+# #########################   ARM PARAMETERS DEFINITION   #########################
 
     # # define parameters for energy computation
     # # l1 = 0.1425
@@ -45,8 +47,11 @@ def compute_energy(robotModel, q, qdot):
     lc2 = 1
     m1 = 1
     m2 = 1
-    I1 = 0.083
-    I2 = 0.33
+    # I1 = 0.083
+    # I2 = 0.33
+    # other inertias
+    I1 = m1*(lc1**2) + 0.083
+    I2 = m2*(lc2**2)  + 0.33
     g = 9.8
 
 
@@ -57,8 +62,23 @@ def compute_energy(robotModel, q, qdot):
     alpha3 = m2*l1*lc2
     beta1 = (m1*lc1 + m2*l1)*g
     beta2 = m2*lc2*g
+    
+    # @@@@@@@@@@   PAPERS DYNAMICS   @@@@@@@@@@
+    M = np.array([[alpha1+alpha2+2*alpha3*np.cos(q[1]), alpha2+alpha3*np.cos(q[1])],
+                    [alpha2+alpha3*np.cos(q[1]), alpha2]])
+    C = alpha3*np.array([-2*qdot[0]*qdot[1] - qdot[1]**2, qdot[0]**2])*np.sin(q[1])
+    G = np.array([beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]), beta2*np.cos(q[0]+q[1])])
+    # other gravity term
+    #G = np.array([beta1*np.sin(q[0]) + beta2*np.sin(q[0]+q[1]), beta2*np.sin(q[0]+q[1])])
 
+    #M_det = np.linalg.det(M)
+    M_det = alpha1*alpha2 - (alpha3**2)*((np.cos(q[1]))**2)
 
+    # compute the DESIRED ENERGY (potential energy up-right position)
+    desired_energy = (beta1 + beta2)
+    
+    
+    
     # @@@@@@@@@@   PINOCCHIO DYNAMICS   @@@@@@@@@@
     # Mpin = pin.crba(robotModel.model, robotModel.data, q)
     # Cpin = pin.computeCoriolisMatrix(robotModel.model, robotModel.data, q, qdot)
@@ -66,7 +86,6 @@ def compute_energy(robotModel, q, qdot):
     # print('Mpin:  ', Mpin)
     # print('Cpin:  ', Cpin)
     # print('Gpin:  ', Gpin)
-
 
     # pin.computeAllTerms(robotModel.model, robotModel.data, q, qdot)
     # Mpin = robotModel.data.M
@@ -76,20 +95,6 @@ def compute_energy(robotModel, q, qdot):
 
     # print('q ', q)
     # print('qdot ', qdot)
-
-    
-    # @@@@@@@@@@   PAPERS DYNAMICS   @@@@@@@@@@
-    M = np.array([[alpha1+alpha2+2*alpha3*np.cos(q[1]), alpha2+alpha3*np.cos(q[1])],
-                    [alpha2+alpha3*np.cos(q[1]), alpha2]])
-    C = alpha3*np.array([-2*qdot[0]*qdot[1] - qdot[1]**2, qdot[0]**2])*np.sin(q[1])
-    G = np.array([beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]), beta2*np.cos(q[0]+q[1])])
-
-    #M_det = np.linalg.det(M)
-    M_det = alpha1*alpha2 - (alpha3**2)*((np.cos(q[1]))**2)
-
-
-    # compute the DESIRED ENERGY (potential energy up-right position)
-    desired_energy = beta1 + beta2
 
 
 # #########################   Compute Gains threshold to choose the gains kp, kd, kv   #########################
@@ -114,25 +119,9 @@ def compute_energy(robotModel, q, qdot):
     #kd > max( ((phi2 + desired_energy)*M_det)/(M[0,0]) )    #for q2 belongs [0, 2pi]     (25 formula in paper)
     #kp > (2/np.pi)*min(beta1**2, beta2**2)          #(43 formula in paper)
     #kv > 0
-
-
-    # Define controller GAINS with our integration of the states (with x-inerta instead of z-inertia and alex link length)
-    # kp = 0.075    # Proportional gain    > 0.06905021
-    # kd = 0.004   # Dynamics gain       > 0.00365861
-    # kv = 0.1    # Derivative gain
-    # gains = np.array([kp, kd, kv])
-    # Define controller GAINS with getJointState pybullet function
-    # kp = 0.22    # Proportional gain    > 0.1970336
-    # kd = 0.016   # Dynamics gain       > 0.0.0143357
-    # kv = 2    # Derivative gain
-    # gains = np.array([kp, kd, kv])
-
     
 
-    # Paper Gains
-    # kp = 0.61    # Proportional gain
-    # kd = 0.358   # Dynamics gain
-    # kv = 0.663   # Derivative gain
+    # PAPER GAINS
     kp = 61.2    # Proportional gain
     kd = 35.8    # Dynamics gain
     kv = 66.3    # Derivative gain
@@ -149,6 +138,8 @@ def compute_energy(robotModel, q, qdot):
 
     # Compute the POTENTIAL ENERGY
     potential_energy = beta1*np.sin(q[0]) + beta2*np.sin(q[0]+q[1])
+    # other potential energy
+    #potential_energy = -(beta1*np.cos(q[0]) + beta2*np.cos(q[0]+q[1]))
 
     # PINOCCHIO POTENTIAL ENERGY
     # gravity = robotModel.model.gravity.linear[2]  # Assuming gravity is in the z-direction
@@ -158,7 +149,9 @@ def compute_energy(robotModel, q, qdot):
     #     mass = robotModel.model.inertias[i].mass
     #     potential_energy += mass * gravity * com_pos[2]
 
-    # TOTAL ENERGY of the Acrobot system
+
+
+    # ***************   TOTAL ENERGY of the Acrobot system   ***************
     acrobot_energy = kinetic_energy + potential_energy
     
     print("Kinetic energy :", kinetic_energy)
@@ -168,7 +161,15 @@ def compute_energy(robotModel, q, qdot):
 
     return acrobot_energy, desired_energy, M, C, G, M_det, gains
 
-def compute_energy22(robotModel, q, qdot):
+
+
+
+
+#__________________________________________________                             _________________________________________________
+# _________________________________________________  ENERGY ANALYSIS PAPER 2002 _________________________________________________
+#__________________________________________________                             _________________________________________________
+
+def compute_energy22(q, qdot):
 
 
 
@@ -231,6 +232,7 @@ def compute_energy22(robotModel, q, qdot):
 
     # Compute the POTENTIAL ENERGY
     potential_energy = beta1*np.sin(q[0]) + beta2*np.sin(q[0]+q[1])
+    
 
     # Compute the DESIRED ENERGY (potential energy up-right position)
     desired_energy = beta1 + beta2

@@ -23,14 +23,15 @@ def csv_write_multiple(x, y1, y2, fileName):
             writer.writerow(['X', 'Y1', 'Y2'])
 
 
-def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M, C, G, M_det, gains):
+def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, M_det, gains):
     global counter
     '''
     The current energy is the current (at a time instant) total energy of the system
     The desired energy is the total energy when the acrobot is at rest in vertical position (so just potential energy in theory)
 
     '''
-# #########################   defining Parameters for the Control Law   #########################
+    
+    # ***************  Defining Parameters for the Control Law   ***************
 
     # dynamics and control components
     #M_det = np.linalg.det(M)
@@ -42,6 +43,7 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     kp = gains[0]
     kd = gains[1]
     kv = gains[2]
+    # if using paper 2002
     # ke = gains[3]
 
     # Compute the error between desired energy and current energy
@@ -60,13 +62,16 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     den = kd*M[0,0] + energy_error*M_det
     tau2 = nom / den
     
+    # ----- Torque limitation -----
+    # if (abs(tau2) > 25.0):
+    #     sign = np.sign(tau2)
+    #     tau2 = 25*sign
+    
     control_torques = np.array([0, tau2])
 
-    # #########################  --------------------  #########################
 
-
-
-    # #########################   Values Check   #########################
+    # ________________________________________________________________________________________
+    # #########################   Values Printing Check and Saving   #########################
 
     #print('\nq configuration is: ', q)
     #print('qdot joint velocity is: ', qdot)
@@ -93,12 +98,19 @@ def energy_shaping_controller(robot, current_energy, desired_energy, q, qdot, M,
     filename9 = os.path.join(folder_path, f'q')
     filename10 = os.path.join(folder_path, f'qdot')
     
+    csv_write(counter, np.squeeze(np.asarray(M)), filename1)
+    csv_write(counter, C, filename2)
+    csv_write(counter, G, filename3)
+    csv_write(counter, M_det, filename4)
     csv_write(counter, current_energy, filename5)
     csv_write(counter, desired_energy, filename6)
     csv_write(counter, energy_error, filename7)
     csv_write(counter, control_torques,filename8)
     csv_write(counter, q, filename9)
     csv_write(counter, qdot, filename10)
-    csv_write(counter, G, filename3)
+    
     counter += 1
+    # ________________________________________________________________________________________
+    
+    
     return control_torques, energy_error
