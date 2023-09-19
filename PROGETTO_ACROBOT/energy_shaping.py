@@ -64,12 +64,12 @@ def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, 
     
     
     
-    # ----- Torque limitation -----
-    if (abs(tau2) > 25.0):
-        sign = np.sign(tau2)
-        tau2 = 25*sign
+    # # ----- Torque limitation -----
+    # if (abs(tau2) > 25.0):
+    #     sign = np.sign(tau2)
+    #     tau2 = 25*sign
     
-    control_torques = np.array([0, tau2])
+    control_torques = np.array([0., tau2])
 
 
     # ________________________________________________________________________________________

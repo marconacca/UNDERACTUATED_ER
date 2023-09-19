@@ -33,7 +33,7 @@ ax = fig.add_subplot(111)
 
 print(num_step, di)
 
-for i in range(0, num_step, di):
-    #print(i // di, '/', num_step // di)
-    simulation.make_plot(i, ax, x1, x2, y1, y2, L1, L2, simDT, di)
+# for i in range(0, num_step, di):
+#     #print(i // di, '/', num_step // di)
+#     simulation.make_plot(i, ax, x1, x2, y1, y2, L1, L2, simDT, di)
     
