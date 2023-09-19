@@ -14,7 +14,6 @@ import sim_utils
 
 #for the graphical part
 import sys
-from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
@@ -60,8 +59,8 @@ def simulate():
 
 
 
-    # @@@@@@@@@@   we are going to consider both revolute joints, so we fill the whole joint indices list @@@@@@@@@@
-    jointIndices = np.array([0,1])
+    # we are going to consider both revolute joints, so we fill the whole joint indices list
+    #jointIndices = np.array([0,1])
     #print('jointIndices :', jointIndices)
 
     #for i in jointIndices:
@@ -108,7 +107,8 @@ def simulate():
         #q = q % (2 * np.pi)
         
         #  angle wrapping between -pi and pi
-        q = np.arctan2(np.sin(q), np.cos(q))
+        #q = np.arctan2(np.sin(q), np.cos(q))
+        #q[0] = np.arctan2(np.sin(q[0]), np.cos(q[0]))
         
         #  another angle wrapping of similar paper
         #q[0] = q[0] % (2*np.pi)
@@ -136,7 +136,7 @@ def simulate():
             seconds = np.append(seconds, s)
             s = s+1
 
-        #if(abs(torques_history[i, 1]) > 3):
+        #if(abs(torques_history[i, 1]) > 25):
         #    input('Check values of control')
 
 

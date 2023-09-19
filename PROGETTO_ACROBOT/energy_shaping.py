@@ -62,10 +62,12 @@ def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, 
     den = kd*M[0,0] + energy_error*M_det
     tau2 = nom / den
     
+    
+    
     # ----- Torque limitation -----
-    # if (abs(tau2) > 25.0):
-    #     sign = np.sign(tau2)
-    #     tau2 = 25*sign
+    if (abs(tau2) > 25.0):
+        sign = np.sign(tau2)
+        tau2 = 25*sign
     
     control_torques = np.array([0, tau2])
 
@@ -92,22 +94,20 @@ def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, 
     filename3 = os.path.join(folder_path, f'Gravity')
     filename4 = os.path.join(folder_path, f'inertia_det')
     filename5 = os.path.join(folder_path, f'current_energy')
-    filename6 = os.path.join(folder_path, f'desired_energy')
-    filename7 = os.path.join(folder_path, f'energy_error')
-    filename8 = os.path.join(folder_path, f'control_torques')
-    filename9 = os.path.join(folder_path, f'q')
-    filename10 = os.path.join(folder_path, f'qdot')
+    filename6 = os.path.join(folder_path, f'energy_error')
+    filename7 = os.path.join(folder_path, f'control_torques')
+    filename8 = os.path.join(folder_path, f'q')
+    filename9 = os.path.join(folder_path, f'qdot')
     
     csv_write(counter, np.squeeze(np.asarray(M)), filename1)
     csv_write(counter, C, filename2)
     csv_write(counter, G, filename3)
     csv_write(counter, M_det, filename4)
     csv_write(counter, current_energy, filename5)
-    csv_write(counter, desired_energy, filename6)
-    csv_write(counter, energy_error, filename7)
-    csv_write(counter, control_torques,filename8)
-    csv_write(counter, q, filename9)
-    csv_write(counter, qdot, filename10)
+    csv_write(counter, energy_error, filename6)
+    csv_write(counter, control_torques,filename7)
+    csv_write(counter, q, filename8)
+    csv_write(counter, qdot, filename9)
     
     counter += 1
     # ________________________________________________________________________________________

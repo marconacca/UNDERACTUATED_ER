@@ -47,11 +47,11 @@ def compute_energy( q, qdot):
     lc2 = 1
     m1 = 1
     m2 = 1
-    # I1 = 0.083
-    # I2 = 0.33
+    I1 = 0.083
+    I2 = 0.33
     # other inertias
-    I1 = m1*(lc1**2) + 0.083
-    I2 = m2*(lc2**2)  + 0.33
+    #I1 = m1*(lc1**2) + 0.083
+    #I2 = m2*(lc2**2)  + 0.33
     g = 9.8
 
 
