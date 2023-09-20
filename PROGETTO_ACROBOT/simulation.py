@@ -96,8 +96,8 @@ def simulate():
 
     
         # **********   compute Dynamics and our Euler Integration   **********
-        #qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
-        qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
+        qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
+        #qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
         q = qnext
         qdot = qdotnext
         

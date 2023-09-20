@@ -18,13 +18,15 @@ def swing_up_control(q, qdot, initial_state, desired_state):
 
 
     # **********   THRESHOLD CHECK to change from Energy to LQR Controller   **********
-    eps = 0.08        # (0.04 2007 paper) in state subtraction absolute values
+    eps = 0.2        # (0.04 2007 paper) in state subtraction absolute values
     actual_state = np.concatenate((q, qdot))
     state_condition = actual_state - desired_state
     #state_condition = initial_state - desired_state
     
-    #condition = abs(state_condition[0]) + abs(state_condition[1]) + abs(state_condition[2])*0.1 + abs(state_condition[3])*0.1
-    condition = abs(state_condition[0]) + abs(state_condition[1])
+    condition = abs(state_condition[0]) + abs(state_condition[1]) + abs(state_condition[2])*0.1 + abs(state_condition[3])*0.1
+    #condition = abs(state_condition[0]) + abs(state_condition[1])
+    print("actual_state", actual_state)
+    print("desired_state", desired_state)
     print("@@@@@@  condition subtraction: ", condition)
 
     #print('€€€€€ - the State Error vector is: ',state_error)
@@ -39,7 +41,7 @@ def swing_up_control(q, qdot, initial_state, desired_state):
         #input("ENERGY-CONTROL:    press ENTER to continue:")
 
 
-    control_torques = control_torques_energy_shaping
+    #control_torques = control_torques_energy_shaping
     #control_torques = control_torques_stabilization
 
     # Pinocchio control computation

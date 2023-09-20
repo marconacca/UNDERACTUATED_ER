@@ -108,13 +108,13 @@ def acrobot_dynamics(q, qdot, control_input, dt):
     # #########################   STATE INTEGRATION   #########################
     
     # Update the state variables using Euler's method
-    # next_dq1 = dq1 + ddq1 * dt
-    # next_dq2 = dq2 + ddq2 * dt
-    # next_q1 = q1 + next_dq1 * dt
-    # next_q2 = q2 + next_dq2 * dt
+    next_dq1 = dq1 + ddq1 * dt
+    next_dq2 = dq2 + ddq2 * dt
+    next_q1 = q1 + next_dq1 * dt
+    next_q2 = q2 + next_dq2 * dt
     
     # Runge-kutta integration
-    next = runge_integrator([q[0], q[1], qdot[0], qdot[1]], dt, [0,tau2])
+    #next = runge_integrator([q[0], q[1], qdot[0], qdot[1]], dt, [0,tau2])
     
     
     # Update the state using some another integration
@@ -128,48 +128,14 @@ def acrobot_dynamics(q, qdot, control_input, dt):
 
     
     # -----   RETURN UPDATED STATE   -----
-    # nextq = np.array([next_q1, next_q2])
-    # nextqdot = np.array([next_dq1, next_dq2])
+    nextq = np.array([next_q1, next_q2])
+    nextqdot = np.array([next_dq1, next_dq2])
     # runge-kutta next state
-    nextq = next[:2]
-    nextqdot = next[2:]
+    # nextq = next[:2]
+    # nextqdot = next[2:]
     
-    print(nextq, nextqdot)
+    #print(nextq, nextqdot)
 
     
     return nextq, nextqdot
 
-
-def runge_integrator(state, dt, torques):
-        
-        k1 = [dt * deriv for deriv in derivative(state, torques)]
-        k2 = [dt * deriv for deriv in derivative([state[i] + 0.5 * k1[i] for i in range(4)], torques)]
-        k3 = [dt * deriv for deriv in derivative([state[i] + 0.5 * k2[i] for i in range(4)], torques)]
-        k4 = [dt * deriv for deriv in derivative([state[i] + k3[i] for i in range(4)],torques)]
-    
-        updated_state = [state[i] + (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6 for i in range(4)]
-
-        return tuple(normalize_angle(angle) for angle in updated_state[:2]), updated_state[2:]
-    
-
-def derivative(state, torques):
-    """
-    Compute the derivatives of the given state including torques.
-    """
-    angle1, angle2, angular_velocity1, angular_velocity2 = state
-    torque1, torque2 = torques
-
-    # Calculate angular accelerations based on torques and inertia parameters.
-    I1 = 0.083
-    I2 = 0.33
-    angular_acceleration1 = (torque1 - torque2) / I1
-    angular_acceleration2 = (torque2 - torque1) / I2
-
-    return angular_velocity1, angular_velocity2, angular_acceleration1, angular_acceleration2
-
-
-def normalize_angle(angle):
-    """
-    Normalize an angle to the range [0, 2π].
-    """
-    return angle % (2 * np.pi)
