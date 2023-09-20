@@ -36,6 +36,7 @@ def integration(q, qdot, time, torques):
 
     # Retrieve the joint positions, velocities
     q1 = nextstates[:2]
+    #q1 = q1[0]- np.pi/2
     qdot1 = nextstates[2:]
     #print('positions: %s\n, velocities %s\n' % (q1, qdot1))
 

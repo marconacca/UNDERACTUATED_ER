@@ -22,14 +22,14 @@ from matplotlib.patches import Circle
 def simulate():
 
     simDT = 1/240 # simulation timestep   (was 1/240)
-    simTime = 25 # total simulation time in seconds (was 25)
+    simTime = 20 # total simulation time in seconds (was 25)
     num_step = int(simTime / simDT)
 
     #robotID, robotModel = sim_utils.simulationSetup(simDT)
     #nDof = 2
 
     # **********   SETTING INITIAL STATE   *********
-    q0 = np.array([-1.4, 0.0]) # initial configuration paper 2007
+    q0 = np.array([-1.4046, 0.0]) # initial configuration paper 2007
     #q0 = np.array([np.pi/2.-1.4, 0.0]) # initial configuration another paper
     qdot0 = np.array([0.0, 0.0]) # initial velocity
     
