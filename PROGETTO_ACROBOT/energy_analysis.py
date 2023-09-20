@@ -49,9 +49,6 @@ def compute_energy( q, qdot):
     m2 = 1.
     I1 = 0.083
     I2 = 0.33
-    # other inertias
-    # I1 = m1*(lc1**2) + 0.083
-    # I2 = m2*(lc2**2)  + 0.33
     g = 9.8
 
 
@@ -165,11 +162,13 @@ def compute_energy( q, qdot):
 
 
 
+
+
 #__________________________________________________                             _________________________________________________
 # _________________________________________________  ENERGY ANALYSIS PAPER 2002 _________________________________________________
 #__________________________________________________                             _________________________________________________
 
-def compute_energy22(q, qdot):
+def compute_energy2002(q, qdot):
 
 
 
@@ -177,12 +176,12 @@ def compute_energy22(q, qdot):
 
 
     # Paper parameters
-    l1 = 1
-    l2 = 2
+    l1 = 1.0
+    l2 = 2.0
     lc1 = 0.5
-    lc2 = 1
-    m1 = 1
-    m2 = 1
+    lc2 = 1.0
+    m1 = 1.0
+    m2 = 1.0
     I1 = 0.083
     I2 = 0.33
     g = 9.8
@@ -211,8 +210,6 @@ def compute_energy22(q, qdot):
 
 
 # #########################   Compute Gains threshold to choose the gains kp, kd, kv   #########################
-
-  
 
     # Paper Gains
     kp = 22    # Proportional gain

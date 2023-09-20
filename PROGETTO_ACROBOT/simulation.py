@@ -8,9 +8,6 @@ from controller_implementation import swing_up_control
 from dynamic_scipy import integration
 from plot_function import plotting_conf, plotting_vel, plotting_torque, plotting_singleval
 import matplotlib.pyplot as plt
-from acro_dynamics import acrobot_dynamics
-
-import sim_utils
 
 #for the graphical part
 import sys
@@ -21,8 +18,8 @@ from matplotlib.patches import Circle
 
 def simulate():
 
-    simDT = 1/240 # simulation timestep   (was 1/240)
-    simTime = 20 # total simulation time in seconds (was 25)
+    simDT = 1/240 # simulation timestep
+    simTime = 20 # total simulation time in seconds
     num_step = int(simTime / simDT)
 
     #robotID, robotModel = sim_utils.simulationSetup(simDT)
@@ -30,7 +27,7 @@ def simulate():
 
     # **********   SETTING INITIAL STATE   *********
     q0 = np.array([-1.4046, 0.0]) # initial configuration paper 2007
-    #q0 = np.array([np.pi/2.-1.4, 0.0]) # initial configuration another paper
+    #q0 = np.array([np.pi/2.-1.4, 0.0]) # initial configuration Working code
     qdot0 = np.array([0.0, 0.0]) # initial velocity
     
     initial_state = np.concatenate((q0, qdot0), axis=None)
@@ -67,12 +64,12 @@ def simulate():
         #pb.resetJointState(robotID, i, q0[i])
 
 
-    # found in code of our paper but it's equal to modify the initial conition
-    # q[1] = q[1] - q[0]
-    # q[0] = q[0] - np.pi/2
-    # qdot[1] = qdot[1] - qdot[0]
 
-    # ********************   SIMULATION CYCLE   ********************
+
+
+#_____________________________________                    ____________________________________
+#____________________________________   SIMULATION CYCLE   __________________________________
+#_____________________________________                    ____________________________________
     folder_path = 'plots'
     if os.path.exists(folder_path):
         shutil.rmtree(folder_path)
@@ -97,7 +94,6 @@ def simulate():
     
         # **********   compute Dynamics and our Euler Integration   **********
         qnext, qdotnext = integration(q, qdot, simDT ,control_torques)
-        #qnext, qdotnext = acrobot_dynamics(q, qdot, control_torques, simDT )
         q = qnext
         qdot = qdotnext
         
@@ -110,7 +106,7 @@ def simulate():
         #q = np.arctan2(np.sin(q), np.cos(q))
         #q[0] = np.arctan2(np.sin(q[0]), np.cos(q[0]))
         
-        #  another angle wrapping of similar paper
+        #  another angle wrapping of Working code
         #q[0] = q[0] % (2*np.pi)
         #q[1] = (q[1] + np.pi) % (2*np.pi) - np.pi
         
@@ -136,10 +132,8 @@ def simulate():
             seconds = np.append(seconds, s)
             s = s+1
 
-        #if(abs(torques_history[i, 1]) > 25):
-        #    input('Check values of control')
 
-
+        # PYBULLET SIMULATION (Not Used)
         #pb.setJointMotorControlArray(robotID, jointIndices, controlMode = pb.TORQUE_CONTROL, forces=control_torques)
         # advance the simulation one step
         #pb.stepSimulation()
