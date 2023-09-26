@@ -45,12 +45,12 @@ def simulate():
     
 
     # Initialize arrays to stores important values and for plotting purposes
-    q_history = np.array([q0])
-    qdot_history = np.array([qdot0])
-    torques_history = np.array([[0,0]])
-    energy_error_history = np.array([0])
-    sim_step = np.array([0])
-    seconds = np.array([0])
+    q_history = []
+    qdot_history = []
+    torques_history = []
+    energy_error_history = []
+    #sim_step #= np.array([0])
+    seconds = []
     s = 0
 
 
@@ -90,6 +90,17 @@ def simulate():
         print('\n***** control_torques: ', control_torques)
         print('\n')
 
+        # STORE DATA for plotting
+        
+        q_history.append(q)
+        qdot_history.append(qdot)
+        torques_history.append(control_torques)
+        energy_error_history.append(energy_error)
+        # i time step of simulation for plotting
+        #sim_step = np.append(sim_step, i)
+        seconds.append(s)
+        s = s+1
+
 
     
         # **********   compute Dynamics and our Euler Integration   **********
@@ -121,16 +132,7 @@ def simulate():
         print('\n')
 
 
-        # STORE DATA for plotting
-        if(i % 1 == 0):
-            q_history = np.append(q_history, [q], axis=0)
-            qdot_history = np.append(qdot_history, [qdot], axis=0)
-            torques_history = np.append(torques_history, [control_torques], axis=0)
-            energy_error_history = np.append(energy_error_history,energy_error)
-            # i time step of simulation for plotting
-            #sim_step = np.append(sim_step, i)
-            seconds = np.append(seconds, s)
-            s = s+1
+        
 
 
         # PYBULLET SIMULATION (Not Used)
