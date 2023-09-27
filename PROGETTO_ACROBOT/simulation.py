@@ -6,8 +6,7 @@ import numpy as np
 import pinocchio as pin
 from controller_implementation import swing_up_control
 from dynamic_scipy import integration
-from plot_function import plotting_conf, plotting_vel, plotting_torque, plotting_singleval
-import matplotlib.pyplot as plt
+from plot_utils import *
 
 #for the graphical part
 import sys
@@ -19,7 +18,7 @@ from matplotlib.patches import Circle
 def simulate():
 
     simDT = 1/240 # simulation timestep
-    simTime = 20 # total simulation time in seconds
+    simTime = 10 # total simulation time in seconds
     num_step = int(simTime / simDT)
 
     #robotID, robotModel = sim_utils.simulationSetup(simDT)
@@ -46,10 +45,14 @@ def simulate():
 
     # Initialize arrays to stores important values and for plotting purposes
     q_history = []
+    q_pi2_history = []
+    q1_pi2_history = []
     qdot_history = []
+    q1dot_history = []
     torques_history = []
+    torque_history = []
     energy_error_history = []
-    #sim_step #= np.array([0])
+    state_history = []
     seconds = []
     s = 0
 
@@ -70,12 +73,11 @@ def simulate():
 #_____________________________________                    ____________________________________
 #____________________________________   SIMULATION CYCLE   __________________________________
 #_____________________________________                    ____________________________________
-    folder_path = 'plots'
-    if os.path.exists(folder_path):
-        shutil.rmtree(folder_path)
-        os.makedirs(folder_path, exist_ok=True)
-    else:
-        os.makedirs(folder_path, exist_ok=True)
+    plots_path = 'plots'
+    csv_folder = 'csv'
+    frames_path = 'frames'
+
+    clear_folder([plots_path, csv_folder, frames_path])
 
     input("press ENTER to START the simulation:")
 
@@ -93,11 +95,15 @@ def simulate():
         # STORE DATA for plotting
         
         q_history.append(q)
+        q_pi2_history.append([q[0] - np.pi/2, q[1]])
+        q1_pi2_history.append(q[0] - np.pi/2)
         qdot_history.append(qdot)
+        q1dot_history.append(qdot[0])
         torques_history.append(control_torques)
+        torque_history.append(control_torques[1])
         energy_error_history.append(energy_error)
-        # i time step of simulation for plotting
-        #sim_step = np.append(sim_step, i)
+        tmp_state = np.concatenate((q, qdot), axis = 0)
+        state_history.append(tmp_state)
         seconds.append(s)
         s = s+1
 
@@ -144,14 +150,13 @@ def simulate():
 
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@    PLOTS TESTING    @@@@@@@@@@@@@@@@@@@@@@@@@
-    # plotting_arrays(sim_step, q_history, 'timestep', 'theta [rad]', ['q1', 'q2'], 'Configuration angle q wrt time')
-    # plotting_arrays(sim_step, qdot_history, 'timestep', 'Vjoint [rad/s]', ['dq1', 'dq2'], 'Joint Velocity dq wrt time')
-    # plotting_arrays(sim_step, torques_history, 'timestep', 'Torque [N*m]', ['Tau1', 'Tau2'], 'Torques Tau wrt time')
-    # plotting_singleval(sim_step, energy_error_history, 'timestep', 'En.ERR [J]', ['En.ERR'], 'Energy error wrt time')
-    plotting_conf(seconds, q_history, 'timestep', 'theta [rad]', ['q1', 'q2'], 'Configuration angle q wrt time')
-    plotting_vel(seconds, qdot_history, 'timestep', 'Vjoint [rad/s]', ['dq1', 'dq2'], 'Joint Velocity dq wrt time')
-    plotting_torque(seconds, torques_history, 'timestep', 'Torque [N*m]', ['Tau1', 'Tau2'], 'Torques Tau wrt time')
-    plotting_singleval(seconds, energy_error_history, 'timestep', 'En.ERR [J]', ['En.ERR'], 'Energy error wrt time')
+    
+    multi_line_plot(seconds, q_pi2_history, 'timestep', '[rad]', ['q\u2081-\u03C0/2', 'q\u2082'], 'Configuration angle q wrt time', 'q', plots_path)
+    multi_line_plot(seconds, qdot_history, 'timestep', '[rad/s]', ['q\u2081dot', 'q\u2082dot'], 'Joint Velocity dq wrt time', 'qdot', plots_path)
+    #multi_line_plot(seconds, torques_history, 'timestep', 'Torque [N*m]', ['\u03C4\u2081', '\u03C4\\u2082'], 'Torques Tau wrt time', 'torque', plots_path)
+    single_line_plot(seconds, torque_history, 'timestep', '\u03C4\u2082[Nm]', '\u03C4\u2082', 'Torques Tau wrt time', 'torque', plots_path)
+    single_line_plot(seconds, energy_error_history, 'timestep', 'E-Er[J]', 'E-Er', 'Energy error wrt time', 'er', plots_path)
+    single_line_plot(q1_pi2_history, q1dot_history, 'q\u2081-\u03C0/2 [rad]', 'q\u2081dot [rad/s]', 'q\u2081-\u03C0/2', 'Phase portrait of q\u2081-\u03C0/2, q\u2081dot in the swing-up phase', 'phase', plots_path)
 
 
 
@@ -159,54 +164,14 @@ def simulate():
 
     #pb.disconnect()
 
-    return num_step, q_history, qdot_history
+
+    return num_step, q_history, qdot_history, state_history
 
 
-
-
-def make_plot(i, ax, x1, x2, y1, y2, L1, L2, simDT, di):
-    # Plot and save an image of the double pendulum configuration for time
-    # point i.
-    # The pendulum rods.
-    
-
-    # Plotted bob circle radius
-    r = 0.05
-    # Plot a trail of the m2 bob's position for the last trail_secs seconds.
-    trail_secs = 1
-    # This corresponds to max_trail time points.
-    max_trail = int(trail_secs / simDT)
-    
-
-    ax.plot([0, x1[i], x2[i]], [0, y1[i], y2[i]], lw=2, c='k')
-    # Circles representing the anchor point of rod 1, and bobs 1 and 2.
-    c0 = Circle((0, 0), r/2, fc='k', zorder=10)
-    c1 = Circle((x1[i], y1[i]), r, fc='b', ec='b', zorder=10)
-    c2 = Circle((x2[i], y2[i]), r, fc='r', ec='r', zorder=10)
-
-    ax.add_patch(c0)
-    ax.add_patch(c1)
-    ax.add_patch(c2)
-
-    # The trail will be divided into ns segments and plotted as a fading line.
-    ns = 20
-    s = max_trail // ns
-
-    for j in range(ns):
-        imin = i - (ns-j)*s
-        if imin < 0:
-            continue
-        imax = imin + s + 1
-        # The fading looks better if we square the fractional length along the
-        # trail.
-        alpha = (j/ns)**2
-        ax.plot(x2[imin:imax], y2[imin:imax], c='r', solid_capstyle='butt',
-                lw=2, alpha=alpha)
-
-    # Centre the image on the fixed anchor point, and ensure the axes are equal
-    ax.set_xlim(-L1-L2-r, L1+L2+r)
-    ax.set_ylim(-L1-L2-r, L1+L2+r)
-    ax.set_aspect('equal', adjustable='box')
-    plt.axis('off')
-    plt.savefig('frames/_img{:04d}.png'.format(i//di), dpi=72)
-    plt.cla()
+def clear_folder(folders):
+    for i in folders:
+        if os.path.exists(i):
+            shutil.rmtree(i)
+            os.makedirs(i, exist_ok=True)
+        else:
+            os.makedirs(i, exist_ok=True)

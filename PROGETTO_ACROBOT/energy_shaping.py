@@ -15,12 +15,13 @@ def csv_write(x, y, fileName):
             writer.writerow(['X', 'Y'])
         writer.writerow([x, y])
         
-def csv_write_multiple(x, y1, y2, fileName):
+def csv_write_multiple(x, y1, y2, y3, y4, fileName):
     # Save the points as a CSV file
     with open(fileName + '.csv', 'a', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=';')
         if csvfile.tell() == 0:
-            writer.writerow(['X', 'Y1', 'Y2'])
+            writer.writerow(['X', 'q1', 'q2', 'q1dot', 'q1dot'])
+        writer.writerow([x, y1, y2, y3, y4])
 
 
 def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, M_det, gains):
@@ -86,9 +87,10 @@ def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, 
     print('€€€€€ - Energy Error is: ', energy_error)
     #print('  Tau2 is: ', tau2)
         # Create a directory for the files
-    folder_path ='plots'
+    folder_path ='csv'
 
 # Generate a unique filename for each plot
+    filename0 = os.path.join(folder_path, f'state')
     filename1 = os.path.join(folder_path, f'inertia')
     filename2 = os.path.join(folder_path, f'Coriolis')
     filename3 = os.path.join(folder_path, f'Gravity')
@@ -99,6 +101,7 @@ def energy_shaping_controller(current_energy, desired_energy, q, qdot, M, C, G, 
     filename8 = os.path.join(folder_path, f'q')
     filename9 = os.path.join(folder_path, f'qdot')
     
+    csv_write(counter, np.concatenate((q,qdot)), filename0)
     csv_write(counter, np.squeeze(np.asarray(M)), filename1)
     csv_write(counter, C, filename2)
     csv_write(counter, G, filename3)

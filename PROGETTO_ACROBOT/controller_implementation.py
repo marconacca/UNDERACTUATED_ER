@@ -4,6 +4,7 @@ from energy_shaping import energy_shaping_controller
 from stabilization import stabilization_controller
 from energy_analysis import compute_energy
 from energy_analysis import compute_energy2002
+from wrap_utils import *
 
 bool = False
 
@@ -15,8 +16,9 @@ def swing_up_control(q, qdot, initial_state, desired_state):
     eps = 0.04        # (0.04 2007 paper) in state subtraction absolute values
     
     actual_state = np.concatenate((q, qdot))
+    #actual_state[:2] = normalize_angles_2002(actual_state[:2])
     state_error = actual_state - desired_state
-    
+
     
     # **********   ENERGY CONTROLLER   **********
     #total_energy, desired_energy, M, C, G, M_det, gains = compute_energy2002(q, qdot)
