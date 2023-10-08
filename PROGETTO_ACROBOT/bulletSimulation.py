@@ -8,6 +8,7 @@ import sim_utils
 def simulate(state_collection, simDT, simTime):
 
     state_collection = np.array(state_collection)
+
     # simDT simulation timestep
     # simTime total simulation time in seconds
 
@@ -30,6 +31,7 @@ def simulate(state_collection, simDT, simTime):
 
     for i in range(int(simTime/simDT)):
 
+        #   FOR EACH JOINT, WE SET THE STATE AND VELOCITY THAT ARE CONCATENATE IN A SINGLE VECTOR
         for j in jointIndices:
             pb.resetJointState(robotID, j, state_collection[i][j], state_collection[i][j+2])
 

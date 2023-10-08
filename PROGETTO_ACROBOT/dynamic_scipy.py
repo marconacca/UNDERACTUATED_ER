@@ -12,6 +12,8 @@ def integration(q, qdot, time, torques):
 
 
     # **********   INTEGRATION with ODEINT   **********
+
+    # INITIAL_STATE, TIMESTEPS AND ARGS ARE THE ARGUMENT OF ODEINT
     integ_states = odeint(inverse_dynamics, initial_state, timesteps, args=(torques,))
     nextstates = integ_states[-1,:]
     

@@ -11,6 +11,7 @@ def single_line_plot(x_timearr, y_valueplot, xlabel, ylabel, legend_names, title
     plt.ylabel(ylabel)
     plt.title(title)
     plt.legend([legend_names], fontsize="x-large")
+    plt.grid(True)
 
     # Save the plot as a PNG image
     plt.savefig(file_path + '/' + file_name + '.png', format='png')
@@ -34,6 +35,7 @@ def multi_line_plot(x_timearr, y_valueplot, xlabel, ylabel, legend_names, title,
     plt.ylabel(ylabel)
     plt.title(title)
     plt.legend([legend_names[0], legend_names[1]], fontsize="x-large")
+    plt.grid(True)
 
     # Save the plot as a PNG image
     plt.savefig(file_path + '/' + file_name + '.png', format='png')

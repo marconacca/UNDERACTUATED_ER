@@ -25,7 +25,8 @@ def simulate():
     #nDof = 2
 
     # **********   SETTING INITIAL STATE   *********
-    q0 = np.array([-1.4046, 0.0]) # initial configuration paper 2007
+    # q0 = np.array([-1.4046, 0.0]) # initial configuration paper 2007
+    q0 = np.array([-1.4, 0.0]) # initial configuration paper 2007
     #q0 = np.array([np.pi/2.-1.4, 0.0]) # initial configuration Working code
     qdot0 = np.array([0.0, 0.0]) # initial velocity
     
@@ -103,9 +104,10 @@ def simulate():
         torque_history.append(control_torques[1])
         energy_error_history.append(energy_error)
         tmp_state = np.concatenate((q, qdot), axis = 0)
+        print("---------------TMP STATE----------------------------------", tmp_state)
         state_history.append(tmp_state)
         seconds.append(s)
-        s = s+1
+        s = s+1/240
 
 
     
@@ -151,11 +153,11 @@ def simulate():
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@    PLOTS TESTING    @@@@@@@@@@@@@@@@@@@@@@@@@
     
-    multi_line_plot(seconds, q_pi2_history, 'timestep', '[rad]', ['q\u2081-\u03C0/2', 'q\u2082'], 'Configuration angle q wrt time', 'q', plots_path)
-    multi_line_plot(seconds, qdot_history, 'timestep', '[rad/s]', ['q\u2081dot', 'q\u2082dot'], 'Joint Velocity dq wrt time', 'qdot', plots_path)
+    multi_line_plot(seconds, q_pi2_history, 'seconds', '[rad]', ['q\u2081-\u03C0/2', 'q\u2082'], 'Configuration angle q wrt time', 'q', plots_path)
+    multi_line_plot(seconds, qdot_history, 'seconds', '[rad/s]', ['q\u2081dot', 'q\u2082dot'], 'Joint Velocity dq wrt time', 'qdot', plots_path)
     #multi_line_plot(seconds, torques_history, 'timestep', 'Torque [N*m]', ['\u03C4\u2081', '\u03C4\\u2082'], 'Torques Tau wrt time', 'torque', plots_path)
-    single_line_plot(seconds, torque_history, 'timestep', '\u03C4\u2082[Nm]', '\u03C4\u2082', 'Torques Tau wrt time', 'torque', plots_path)
-    single_line_plot(seconds, energy_error_history, 'timestep', 'E-Er[J]', 'E-Er', 'Energy error wrt time', 'er', plots_path)
+    single_line_plot(seconds, torque_history, 'seconds', '\u03C4\u2082[Nm]', '\u03C4\u2082', 'Torques Tau wrt time', 'torque', plots_path)
+    single_line_plot(seconds, energy_error_history, 'seconds', 'E-Er[J]', 'E-Er', 'Energy error wrt time', 'er', plots_path)
     single_line_plot(q1_pi2_history, q1dot_history, 'q\u2081-\u03C0/2 [rad]', 'q\u2081dot [rad/s]', 'q\u2081-\u03C0/2', 'Phase portrait of q\u2081-\u03C0/2, q\u2081dot in the swing-up phase', 'phase', plots_path)
 
 
